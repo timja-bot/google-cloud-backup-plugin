@@ -4,15 +4,23 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>google-plugins</artifactId>
-    <version>0.1-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <artifactId>plugin</artifactId>
+    <version>1.626</version>
+    <relativePath />
   </parent>
 
-  <artifactId>google-persistent-master</artifactId>
+  <artifactId>google-cloud-backup</artifactId>
   <packaging>hpi</packaging>
+  <version>0.1-SNAPSHOT</version>
 
-  <name>Google Persistent Jenkins Master Plugin</name>
+  <name>Google Cloud Backup Plugin</name>
+  <licenses>
+    <license>
+      <name>The Apache V2 License</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
   <build>
     <plugins>
@@ -39,6 +47,24 @@
       </plugin>
     </plugins>
   </build>
+
+  <developers>
+    <developer>
+      <id>astroilov</id>
+      <name>Andrey Stroilov</name>
+    </developer>
+    <developer>
+      <id>wzheng2310</id>
+      <name>Wei Zheng</name>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <properties>
     <powermock.version>1.6.0</powermock.version>
