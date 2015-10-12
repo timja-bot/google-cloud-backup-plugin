@@ -87,6 +87,8 @@ public class PersistentMasterPlugin extends Plugin {
   // These fields will not be persisted in the configs.
   private final transient AtomicBoolean backupOrRestoreInProgress =
       new AtomicBoolean(true); // start in a 'restoring' state.
+  private final transient AtomicBoolean manualBackupRequested =
+      new AtomicBoolean(false);
   private final transient PersistentMasterJenkinsModule module;
   private transient BackupProcedure fullBackupProcedure;
   private transient boolean loaded = false;
@@ -359,6 +361,14 @@ public class PersistentMasterPlugin extends Plugin {
 
   public void setLastFullBackupTime(DateTime lastFullBackupTime) {
     this.lastFullBackupTime = lastFullBackupTime;
+  }
+
+  public boolean isManualBackupRequested() {
+    return manualBackupRequested.get();
+  }
+
+  public void setManualBackupRequested(boolean requested) {
+    manualBackupRequested.set(requested);
   }
 
   public BackupProcedure getFullBackupProcedure() {

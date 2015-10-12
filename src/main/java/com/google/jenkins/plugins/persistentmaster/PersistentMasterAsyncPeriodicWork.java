@@ -84,8 +84,10 @@ public class PersistentMasterAsyncPeriodicWork extends AsyncPeriodicWork {
    * direct invocation by {@link PersistentMasterRestartListener}.
    */
   boolean shouldCreateFullBackup(PersistentMasterPlugin plugin) {
-    if (plugin.getLastFullBackupTime() == null) {
-      return true;  // no full backup available, thus create one
+    if (plugin.getLastFullBackupTime() == null
+        || plugin.isManualBackupRequested()) {
+      // no full backup available, or an admin manually requested a full backup
+      return true;
     }
     return plugin.getFullBackupTrigger().shouldCreateBackup(
         plugin.getLastFullBackupTime());
@@ -124,6 +126,10 @@ public class PersistentMasterAsyncPeriodicWork extends AsyncPeriodicWork {
         LOGGER.log(Level.SEVERE, "IOException while creating backup", e);
       }
     } finally {
+      if (fullBackup && !plugin.isLastBackupFailed()) {
+        // We completed a full backup. Clear the manual-request flag.
+        plugin.setManualBackupRequested(false);
+      }
       plugin.endBackupOrRestore();
     }
   }
