@@ -19,6 +19,7 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Google+Cloud+Backup+Plugin</url>
 
   <build>
     <plugins>
@@ -50,10 +51,6 @@
     <developer>
       <id>astroilov</id>
       <name>Andrey Stroilov</name>
-    </developer>
-    <developer>
-      <id>wzheng2310</id>
-      <name>Wei Zheng</name>
     </developer>
   </developers>
 
