@@ -108,6 +108,7 @@ public class PersistentMasterAsyncPeriodicWorkTest {
     verify(plugin).setLastFullBackupTime(eq(backupTime));
     verify(plugin).setLastBackupFailed(eq(false));
     verify(plugin).endBackupOrRestore();
+    verify(plugin).setManualBackupRequested(false);
   }
 
   @Test
@@ -128,6 +129,7 @@ public class PersistentMasterAsyncPeriodicWorkTest {
     verify(plugin, never()).setLastBackupTime(eq(backupTime));
     verify(plugin, never()).setLastBackupFailed(eq(false));
     verify(plugin, never()).endBackupOrRestore();
+    verify(plugin, never()).setManualBackupRequested(false);
   }
 
   @Test
@@ -176,6 +178,35 @@ public class PersistentMasterAsyncPeriodicWorkTest {
   }
 
   @Test
+  public void testFullBackupManuallyRequested_shouldCreateFullBackup()
+      throws Exception {
+    // Set the plugin in such a state that an incremental backup would normally
+    // be performed - but also set the 'full backup' flag.
+    final DateTime backupTime = now;
+    when(plugin.isLoaded()).thenReturn(true);
+    when(plugin.getEnableBackup()).thenReturn(true);
+    when(plugin.getLastFullBackupTime()).thenReturn(now);
+    when(plugin.getLastBackupTime()).thenReturn(now);
+    when(plugin.beginBackupOrRestore()).thenReturn(true);
+    when(plugin.getFullBackupProcedure()).thenReturn(backupProcedure);
+    when(plugin.getIncrementalBackupTrigger()).thenReturn(backupTriggerTrue);
+    when(plugin.getFullBackupTrigger()).thenReturn(backupTriggerFalse);
+    when(plugin.isManualBackupRequested()).thenReturn(true);
+    when(backupProcedure.performBackup()).thenReturn(backupTime);
+
+    periodicWork.execute(taskListener);
+
+    verify(plugin).getLastFullBackupTime();
+    verify(plugin).beginBackupOrRestore();
+    verify(backupProcedure).performBackup();
+    verify(plugin).setLastBackupTime(eq(backupTime));
+    verify(plugin).setLastFullBackupTime(eq(backupTime));
+    verify(plugin).setLastBackupFailed(eq(false));
+    verify(plugin).endBackupOrRestore();
+    verify(plugin).setManualBackupRequested(false);
+  }
+
+  @Test
   public void testBeginBackupOrRestoreFails_shouldNotCreateBackup()
       throws Exception {
     final DateTime backupTime = now;
@@ -196,6 +227,7 @@ public class PersistentMasterAsyncPeriodicWorkTest {
     verify(plugin, never()).setLastBackupTime(eq(backupTime));
     verify(plugin, never()).setLastBackupFailed(eq(false));
     verify(plugin, never()).endBackupOrRestore();
+    verify(plugin, never()).setManualBackupRequested(false);
   }
 
   @Test
@@ -219,6 +251,7 @@ public class PersistentMasterAsyncPeriodicWorkTest {
     verify(plugin, never()).setLastBackupTime(eq(backupTime));
     verify(plugin, never()).setLastBackupFailed(eq(false));
     verify(plugin, never()).endBackupOrRestore();
+    verify(plugin, never()).setManualBackupRequested(false);
   }
 
 }
