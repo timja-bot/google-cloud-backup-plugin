@@ -19,9 +19,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.util.List;
+import java.util.logging.Logger;
 
 import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeCreator;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+
 
 /**
  * An incremental scope only adds files that have been modified since the last
@@ -32,6 +35,10 @@ import com.google.jenkins.plugins.persistentmaster.volume.Volume;
  * including it in the volume.
  */
 public class IncrementalScope extends ForwardingScope {
+  
+  private static final Logger logger =
+      Logger.getLogger(IncrementalScope.class.getName());
+
 
   private final FileTime lastBackupTime;
 
@@ -48,18 +55,21 @@ public class IncrementalScope extends ForwardingScope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Volume.Creator creator)
+  public void addFiles(Path jenkinsHome, Volume.Creator creator, List<String> existingFileNames)
       throws IOException {
     super.addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
       @Override
       public void addFile(
-          Path file, String pathInVolume, BasicFileAttributes attrs)
+          Path file, String pathInVolume, BasicFileAttributes attrs,List<String> existingFileNames)
           throws IOException {
+          logger.info("In incremental scope. Adding path" + pathInVolume);
+          existingFileNames.add(pathInVolume);
+          
         // add file only if it has been modified since the last backup
         if (attrs.lastModifiedTime().compareTo(lastBackupTime) > 0) {
-          super.addFile(file, pathInVolume, attrs);
+          super.addFile(file, pathInVolume, attrs, existingFileNames);
         }
       }
-    });
+    }, existingFileNames);
   }
 }

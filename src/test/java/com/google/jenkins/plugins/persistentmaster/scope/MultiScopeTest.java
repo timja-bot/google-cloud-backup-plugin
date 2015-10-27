@@ -17,8 +17,10 @@ package com.google.jenkins.plugins.persistentmaster.scope;
 
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -71,24 +73,24 @@ public class MultiScopeTest {
 
   @Test
   public void testAddFiles_prefixAdded() throws Exception {
-    multiScope.addFiles(jenkinsHome, creator);
+    multiScope.addFiles(jenkinsHome, creator, new ArrayList<String>());
 
     // scope1
     ArgumentCaptor<Volume.Creator> volumeCreatorCaptor = ArgumentCaptor
         .forClass(Volume.Creator.class);
-    verify(scope1).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture());
+    verify(scope1).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture(), any(List.class));
     assertNotSame(creator, volumeCreatorCaptor.getValue());
-    volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope1", null);
+    volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope1", null, null);
     verify(creator).addFile(same(jenkinsHome), eq("scope1/fileOfScope1"),
-        any(BasicFileAttributes.class));
+        any(BasicFileAttributes.class), any(List.class));
 
     // scope2
     volumeCreatorCaptor = ArgumentCaptor.forClass(Volume.Creator.class);
-    verify(scope2).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture());
+    verify(scope2).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture(), any(List.class));
     assertNotSame(creator, volumeCreatorCaptor.getValue());
-    volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope2", null);
+    volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope2", null, null);
     verify(creator).addFile(same(jenkinsHome), eq("scope2/fileOfScope2"),
-        any(BasicFileAttributes.class));
+        any(BasicFileAttributes.class), any(List.class));
   }
 
   @Test
@@ -104,13 +106,13 @@ public class MultiScopeTest {
     when(entry1.getName()).thenReturn("scope1/fileOfScope1");
     when(entry2.getName()).thenReturn("scope2/fileOfScope2");
 
-    multiScope.extractFiles(jenkinsHome, extractor, false);
+    multiScope.extractFiles(jenkinsHome, extractor, false, null);
 
     // scope1
     ArgumentCaptor<Volume.Extractor> volumeExtractorCaptor = ArgumentCaptor
         .forClass(Volume.Extractor.class);
     verify(scope1).extractFiles(same(jenkinsHome),
-        volumeExtractorCaptor.capture(), eq(false));
+        volumeExtractorCaptor.capture(), eq(false), any (List.class));
     assertNotSame(extractor, volumeExtractorCaptor.getValue());
     Iterator<Entry> entries = volumeExtractorCaptor.getValue().iterator();
     assertTrue(entries.hasNext());
@@ -120,7 +122,7 @@ public class MultiScopeTest {
     // scope2
     volumeExtractorCaptor = ArgumentCaptor.forClass(Volume.Extractor.class);
     verify(scope2).extractFiles(same(jenkinsHome),
-        volumeExtractorCaptor.capture(), eq(false));
+        volumeExtractorCaptor.capture(), eq(false), any(List.class));
     assertNotSame(extractor, volumeExtractorCaptor.getValue());
     entries = volumeExtractorCaptor.getValue().iterator();
     assertTrue(entries.hasNext());

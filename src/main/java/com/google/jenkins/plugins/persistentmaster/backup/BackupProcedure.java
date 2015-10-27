@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -107,18 +109,22 @@ public class BackupProcedure {
     try {
       logger.fine("Creating backup volume");
       int fileCount;
+      List<String> existingFileNames = new ArrayList<>();
       try (Volume.Creator creator = volume.createNew(volumePath)) {
-        scope.addFiles(jenkinsHome, creator);
+        scope.addFiles(jenkinsHome, creator, existingFileNames);
         fileCount = creator.getFileCount();
       } // auto-close creator
 
+      logger.info("Updating all existing files" + existingFileNames + "scope is"+ scope.getClass());
+      storage.updateExistingFilesMetaData(existingFileNames);
+      
       if (fileCount > 0) {
         logger.fine("Storing backup volume");
         storage.storeFile(volumePath, backupVolumeName);
 
         logger.fine("Updating last backup reference");
         storage.updateLastBackup(Arrays.asList(backupVolumeName));
-
+        
         logger.fine("Apply backup history policy");
         backupHistory.processHistoricBackups(storage, backupVolumeName);
       } else {

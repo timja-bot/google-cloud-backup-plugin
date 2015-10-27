@@ -50,7 +50,7 @@ public abstract class ForwardingVolumeEntry implements Volume.Entry {
   public boolean isSymlink() {
     return entry.isSymlink();
   }
-
+  
   @Override
   public void extractTo(Path target, boolean overwrite) throws IOException {
     entry.extractTo(target, overwrite);

@@ -50,25 +50,25 @@ public class MultiScope implements Scope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Volume.Creator creator)
+  public void addFiles(Path jenkinsHome, Volume.Creator creator, List<String> existingFileNames)
       throws IOException {
     for (final SubScope subScope : subScopes) {
       subScope.getScope()
           .addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
             @Override
             public void addFile(
-                Path file, String pathInVolume, BasicFileAttributes attrs)
+                Path file, String pathInVolume, BasicFileAttributes attrs, List<String> existingFileNames)
                 throws IOException {
               super.addFile(
-                  file, subScope.getVolumePrefix() + pathInVolume, attrs);
+                  file, subScope.getVolumePrefix() + pathInVolume, attrs, existingFileNames);
             }
-          });
+          }, existingFileNames);
     }
   }
 
   @Override
   public void extractFiles(final Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite) throws IOException {
+      boolean overwrite, List<String> existingFileNames) throws IOException {
     for (final SubScope subScope : subScopes) {
       subScope.getScope()
           .extractFiles(jenkinsHome, new ForwardingVolumeExtractor(extractor) {
@@ -77,7 +77,7 @@ public class MultiScope implements Scope {
               return new SubScopeIterator(subScope, super.iterator());
             }
 
-          }, overwrite);
+          }, overwrite, existingFileNames);
     }
   }
 

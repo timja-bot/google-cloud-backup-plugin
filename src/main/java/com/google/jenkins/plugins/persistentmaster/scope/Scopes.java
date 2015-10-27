@@ -15,6 +15,7 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
@@ -22,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -53,7 +55,7 @@ public final class Scopes {
   public static void addAllFilesIn(
       final Path basePath,
       final Volume.Creator creator,
-      final Set<Path> excludedDirs) throws IOException {
+      final Set<Path> excludedDirs, final List<String> existingFileMetadata) throws IOException {
     Files.walkFileTree(basePath, new SimpleFileVisitor<Path>() {
 
       @Override
@@ -75,7 +77,7 @@ public final class Scopes {
               .newDirectoryStream(dir)) {
             if (!directoryStream.iterator().hasNext()) {
               logger.finer("Adding empty directory: " + dir);
-              creator.addFile(dir, basePath.relativize(dir).toString(), attrs);
+              creator.addFile(dir, basePath.relativize(dir).toString(), attrs, existingFileMetadata);
             }
           } // auto-close directoryStream
           return FileVisitResult.CONTINUE;
@@ -89,7 +91,7 @@ public final class Scopes {
           logger.finer("Skipping excluded file: " + file);
         } else {
           logger.finer("Adding file: " + file);
-          creator.addFile(file, basePath.relativize(file).toString(), attrs);
+          creator.addFile(file, basePath.relativize(file).toString(), attrs, existingFileMetadata);
         }
         return FileVisitResult.CONTINUE;
       }
@@ -117,9 +119,15 @@ public final class Scopes {
    * @throws IOException if some file operation fails.
    */
   public static void extractAllFilesTo(
-      Path targetDir, Volume.Extractor extractor, boolean overwrite)
+      Path targetDir, Volume.Extractor extractor, boolean overwrite, List<String> existingFileNames)
       throws IOException {
     for (Volume.Entry entry : extractor) {
+      logger.info("Entry is"+ entry.getName());
+      //logger.info("existing file names" + existingFileNames);
+      if(!existingFileNames.contains(entry.getName())){
+        logger.info("Ohh no Extracted file is" +entry.getName());
+        continue;
+      }
       entry.extractTo(targetDir.resolve(entry.getName()), overwrite);
     }
   }

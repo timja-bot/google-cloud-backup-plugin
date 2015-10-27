@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -60,8 +61,9 @@ class ZipCreator implements Volume.Creator {
 
   @Override
   public void addFile(Path file, String pathInVolume,
-      @Nullable BasicFileAttributes attrs) throws IOException {
+      @Nullable BasicFileAttributes attrs, List<String> existingFileMetadata) throws IOException {
     Preconditions.checkState(!closed, "Volume closed");
+    existingFileMetadata.add(pathInVolume);
     if (attrs == null) {  // make sure attrs are available
       attrs = Files.readAttributes(file, BasicFileAttributes.class);
     }
@@ -78,6 +80,7 @@ class ZipCreator implements Volume.Creator {
   private void copySymlink(Path file, String filenameInZip) throws IOException {
     logger.finer("Adding symlink: " + file + " with filename: "
         + filenameInZip);
+    //logger.info("Adding symlink: " + file + " with filename: "   + filenameInZip);
     Path symlinkTarget = Files.readSymbolicLink(file);
     // Unfortunately, there is no API method to create a symlink in a ZIP file,
     // however, a symlink entry can easily be created by hand.
@@ -93,6 +96,7 @@ class ZipCreator implements Volume.Creator {
 
   private void copyDirectory(String filenameInZip) throws IOException {
     logger.finer("Adding directory: " + filenameInZip);
+   // logger.info("Adding directory: " + filenameInZip);
     // entries ending in / indicate a directory
     ZipArchiveEntry entry = new ZipArchiveEntry(filenameInZip + "/");
     // in addition, set the unix directory flag
@@ -104,6 +108,7 @@ class ZipCreator implements Volume.Creator {
   private void copyRegularFile(Path file, String filenameInZip)
       throws IOException {
     logger.finer("Adding file: " + file + " with filename: " + filenameInZip);
+    logger.info(" Reg file Adding file: " + file + " with filename: " + filenameInZip);
     ZipArchiveEntry entry = new ZipArchiveEntry(filenameInZip);
     zipStream.putArchiveEntry(entry);
     Files.copy(file, zipStream);

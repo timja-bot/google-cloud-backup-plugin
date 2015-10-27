@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeCreator;
@@ -41,16 +42,16 @@ public class FilteringScope extends ForwardingScope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Creator creator) throws IOException {
+  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileNames) throws IOException {
     super.addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
       @Override
       public void addFile(
-          Path file, String pathInVolume, BasicFileAttributes attrs)
+          Path file, String pathInVolume, BasicFileAttributes attrs, List<String> existingFileNames)
           throws IOException {
         if (!exclusions.contains(pathInVolume)) {
-          super.addFile(file, pathInVolume, attrs);
+          super.addFile(file, pathInVolume, attrs, existingFileNames);
         }
       }
-    });
+    }, existingFileNames);
   }
 }

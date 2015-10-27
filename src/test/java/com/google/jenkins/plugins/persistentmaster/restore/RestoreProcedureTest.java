@@ -99,9 +99,10 @@ public class RestoreProcedureTest {
     verify(storage).loadFile(eq(latestBackup), volumePathCaptor.capture());
     verify(volume).extract(eq(volumePathCaptor.getValue()));
     verify(scope).extractFiles(eq(jenkinsHome), same(volumeExtractor),
-        eq(false));
+        eq(false), any(List.class));
     verify(initiationStrategy).initializeRestoredEnvironment(eq(jenkinsHome),
         eq(latestBackup));
+    verify(storage).listMetadataForExistingFiles();
     verifyNoMoreInteractions(initiationStrategy, volume, scope, storage);
   }
 
@@ -127,6 +128,7 @@ public class RestoreProcedureTest {
     restoreProcedure.performRestore();
 
     verify(storage).findLatestBackup();
+    verify(storage).listMetadataForExistingFiles();
 
     // every backup must be restored in order
     List<ArgumentCaptor<Path>> pathCaptorList = new ArrayList<>(backupCnt);
@@ -136,7 +138,7 @@ public class RestoreProcedureTest {
       backupOrder.verify(storage).loadFile(eq(backup), volumePath.capture());
       backupOrder.verify(volume).extract(eq(volumePath.getValue()));
       backupOrder.verify(scope).extractFiles(
-          eq(jenkinsHome), same(volumeExtractor), eq(false));
+          eq(jenkinsHome), same(volumeExtractor), eq(false), any(List.class));
       pathCaptorList.add(volumePath);
     }
 

@@ -17,7 +17,9 @@ package com.google.jenkins.plugins.persistentmaster.scope;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -48,7 +50,7 @@ public class DefaultBackupScope extends ConfigurableScope {
   }
 
   @Override
-  public void addFiles(final Path jenkinsHome, Volume.Creator creator)
+  public void addFiles(final Path jenkinsHome, Volume.Creator creator, List<String> existingFileNames)
       throws IOException {
     Set<Path> excludedDirs = new HashSet<>();
     // exclude tmp dirs from build slaves
@@ -68,13 +70,13 @@ public class DefaultBackupScope extends ConfigurableScope {
     // exclude workspaces inside of branches
     excludedDirs.add(jenkinsHome.resolve("jobs/*/branches/*/workspace"));
 
-    Scopes.addAllFilesIn(jenkinsHome, creator, excludedDirs);
+    Scopes.addAllFilesIn(jenkinsHome, creator, excludedDirs, existingFileNames);
   }
 
   @Override
   public void extractFiles(Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite) throws IOException {
-    Scopes.extractAllFilesTo(jenkinsHome, extractor, overwrite);
+      boolean overwrite, List<String> existingFileNames) throws IOException {
+    Scopes.extractAllFilesTo(jenkinsHome, extractor, overwrite, existingFileNames);
   }
 
   /**

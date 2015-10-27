@@ -15,6 +15,8 @@
  */
 package com.google.jenkins.plugins.persistentmaster.storage;
 
+import com.google.common.collect.Lists;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,17 +38,17 @@ import java.util.logging.Logger;
  * in gcloud) in order to perform the actual GCS access.
  */
 public class GcloudGcsStorage implements Storage {
-
-  private static final Logger logger = Logger.getLogger(
-      GcloudGcsStorage.class.getName());
+  private static final Logger logger = Logger.getLogger(GcloudGcsStorage.class.getName());
 
   private static final String LAST_BACKUP_FILE = "last-backup";
+  private static final String ALL_EXISTING_FILES = "existing-files";
   private static final String COMMENT_PREFIX = "#";
   private static final String COMMENT_LINE =
       COMMENT_PREFIX + " This file contains the filename of the last backup.";
+//  private static final String EXISTING_FILES_COMMENT_LINE =
+//      COMMENT_PREFIX + " This file contains the existing files meta data.";
   private static final String GSUTIL_CMD = "gsutil";
-  private static final String TMP_DIR_PREFIX
-      = "persistent-master-backup-plugin";
+  private static final String TMP_DIR_PREFIX = "persistent-master-backup-plugin";
 
   private final String gsUrlPrefix;
 
@@ -56,8 +58,7 @@ public class GcloudGcsStorage implements Storage {
 
   @Override
   public void storeFile(Path localFile, String filename) throws IOException {
-    logger.finer("Storing local file: " + localFile + " with filename: "
-        + filename);
+    logger.finer("Storing local file: " + localFile + " with filename: " + filename);
     gsutil("cp", localFile.toString(), gsUrlPrefix + filename);
   }
 
@@ -81,7 +82,7 @@ public class GcloudGcsStorage implements Storage {
     for (String file : gsutilOut) {
       // remove gs://bucket/ from the beginning of every filename
       file = file.substring(urlPrefixLength);
-      if (!Objects.equals(file, LAST_BACKUP_FILE)) {  // exclude internal file
+      if (!Objects.equals(file, LAST_BACKUP_FILE)) { // exclude internal file
         files.add(file);
       }
     }
@@ -111,6 +112,30 @@ public class GcloudGcsStorage implements Storage {
   }
 
   @Override
+  public List<String> listMetadataForExistingFiles() throws IOException {
+    List<String> content = null;
+    try {
+      content = gsutil("cat", gsUrlPrefix + ALL_EXISTING_FILES);
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Exception while loading existing file. Files previously deleted may load", e);
+      return null;
+    }
+    if (content.isEmpty()) {
+      logger.fine("Existing is empty. Looks like deleted files may load");
+      return null;
+    }
+    List<String> files = new LinkedList<>();
+    for (String line : content) {
+      if (!line.trim().isEmpty() && !line.startsWith(COMMENT_PREFIX)) {
+        files.add(line.trim());
+      }
+    }
+    return files;
+  }
+
+  
+
+  @Override
   public void updateLastBackup(List<String> filenames) throws IOException {
     logger.fine("Updating last-backup file.");
     List<String> content = new ArrayList<>(filenames.size() + 1);
@@ -129,6 +154,29 @@ public class GcloudGcsStorage implements Storage {
     }
   }
 
+  /* (non-Javadoc)
+   * @see com.google.jenkins.plugins.persistentmaster.storage.Storage#updateExistingFilesMetaData(java.util.List)
+   */
+  @Override
+  public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
+    logger.fine("Updating existing files meta data.");
+    logger.info("Updating existing files meta data.");
+    List<String> content = new ArrayList<>(filenames.size() + 1);
+    content.add(COMMENT_LINE);
+    content.addAll(filenames);
+    final Path tempDirectory = Files.createTempDirectory(TMP_DIR_PREFIX);
+    final Path tempFilePath = tempDirectory.resolve(ALL_EXISTING_FILES);
+    logger.fine("Using temp file: " + tempFilePath);
+    try {
+      Files.write(tempFilePath, content, StandardCharsets.UTF_8);
+      gsutil("cp", tempFilePath.toString(), gsUrlPrefix + ALL_EXISTING_FILES);
+    } finally {
+      logger.fine("Cleaning up temp file & directory.");
+      Files.deleteIfExists(tempFilePath);
+      Files.deleteIfExists(tempDirectory);
+    }
+  }
+    
   private List<String> gsutil(String... params) throws IOException {
     ProcessBuilder builder = new ProcessBuilder(GSUTIL_CMD);
     for (String param : params) {
@@ -137,8 +185,9 @@ public class GcloudGcsStorage implements Storage {
     builder.redirectErrorStream(true);
     List<String> output = new LinkedList<>();
     Process process = builder.start();
-    try (BufferedReader out = new BufferedReader(new InputStreamReader(
-        process.getInputStream(), StandardCharsets.UTF_8))) {
+    try (
+        BufferedReader out = new BufferedReader(
+            new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
       String line;
       while ((line = out.readLine()) != null) {
         output.add(line);
@@ -189,8 +238,8 @@ public class GcloudGcsStorage implements Storage {
 
   @Override
   public String toString() {
-    return "GcloudGcsStorage{" +
-        "gsUrlPrefix='" + gsUrlPrefix + '\'' +
-        '}';
+    return "GcloudGcsStorage{"
+        + "gsUrlPrefix='" + gsUrlPrefix + '\'' + '}';
   }
+
 }

@@ -17,6 +17,7 @@ package com.google.jenkins.plugins.persistentmaster.scope;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import com.google.jenkins.plugins.persistentmaster.volume.Volume.Creator;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume.Extractor;
@@ -33,13 +34,13 @@ public abstract class ForwardingScope implements Scope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Creator creator) throws IOException {
-    scope.addFiles(jenkinsHome, creator);
+  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileNames) throws IOException {
+    scope.addFiles(jenkinsHome, creator, existingFileNames);
   }
 
   @Override
   public void extractFiles(Path jenkinsHome, Extractor extractor,
-      boolean overwrite) throws IOException {
-    scope.extractFiles(jenkinsHome, extractor, overwrite);
+      boolean overwrite, List<String> existingFiles) throws IOException {
+    scope.extractFiles(jenkinsHome, extractor, overwrite, existingFiles);
   }
 }

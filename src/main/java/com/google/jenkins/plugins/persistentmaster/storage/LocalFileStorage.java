@@ -93,6 +93,13 @@ public class LocalFileStorage implements Storage {
     }
     return null;  // last backup reference not found
   }
+  
+ 
+  @Override
+  public List<String> listMetadataForExistingFiles() throws IOException {
+    // TODO(ckerur): Auto-generated method stub
+    return null;
+  }
 
   @Override
   public void updateLastBackup(List<String> filenames) throws IOException {
@@ -103,6 +110,13 @@ public class LocalFileStorage implements Storage {
     Files.write(lastBackupPath, content, StandardCharsets.UTF_8,
         StandardOpenOption.CREATE, StandardOpenOption.WRITE,
         StandardOpenOption.TRUNCATE_EXISTING);
+  }
+
+  
+  @Override
+  public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
+    // TODO(ckerur): Auto-generated method stub
+   
   }
 
   @Override
@@ -135,4 +149,6 @@ public class LocalFileStorage implements Storage {
         "storageDir=" + storageDir +
         '}';
   }
+
+
 }

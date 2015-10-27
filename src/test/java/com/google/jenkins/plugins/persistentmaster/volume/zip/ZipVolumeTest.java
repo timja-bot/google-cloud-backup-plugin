@@ -25,6 +25,8 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -35,6 +37,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.jenkins.plugins.persistentmaster.scope.Scopes;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 /**
@@ -96,27 +99,30 @@ public class ZipVolumeTest {
   public void testCreateAndExtractZipArchive() throws Exception {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
+    List<String> existingFiles = new ArrayList<>();
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
-      creator.addFile(nonEmptyDir, "nonEmptyDir", null);
-      creator.addFile(emptyDir, "emptyDir", null);
-      creator.addFile(fileInRoot, "fileInRoot", null);
-      creator.addFile(fileInDir, "nonEmptyDir/fileInDir", null);
+      creator.addFile(nonEmptyDir, "nonEmptyDir", null, existingFiles);
+      creator.addFile(emptyDir, "emptyDir", null, existingFiles);
+      creator.addFile(fileInRoot, "fileInRoot", null, existingFiles);
+      creator.addFile(fileInDir, "nonEmptyDir/fileInDir", null, existingFiles);
       creator.addFile(validSymlink, "validSymlink",
           Files.readAttributes(validSymlink, BasicFileAttributes.class,
-              LinkOption.NOFOLLOW_LINKS));
+              LinkOption.NOFOLLOW_LINKS), existingFiles);
       creator.addFile(invalidSymlink, "invalidSymlink",
           Files.readAttributes(invalidSymlink, BasicFileAttributes.class,
-              LinkOption.NOFOLLOW_LINKS));
+              LinkOption.NOFOLLOW_LINKS), existingFiles);
     }  // auto-close creator
     assertTrue(Files.exists(volumePath));
+    
 
     // extract
     Path extractPath = tempDirectory.resolve("extracted");
     Files.createDirectory(extractPath);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
-      for (Volume.Entry entry : extractor) {
-        entry.extractTo(extractPath.resolve(entry.getName()), true);
-      }
+      Scopes.extractAllFilesTo(extractPath, extractor, true, existingFiles);
+//      for (Volume.Entry entry : extractor) {
+//        entry.extractTo(extractPath.resolve(entry.getName()), true, existingFiles);
+//      }
     } // auto-close extractor
 
     // verify
@@ -140,9 +146,10 @@ public class ZipVolumeTest {
   public void testCreateAndExtractZipArchiveWithConflict() throws Exception {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
+    List<String> existingFiles = new ArrayList<>();
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
-      creator.addFile(existingFile, "existingFile", null);
-      creator.addFile(newFile, "newFile", null);
+      creator.addFile(existingFile, "existingFile", null, existingFiles);
+      creator.addFile(newFile, "newFile", null, existingFiles);
     }  // auto-close creator
     assertTrue(Files.exists(volumePath));
 
@@ -156,9 +163,10 @@ public class ZipVolumeTest {
         Collections.singleton("existingFile old content"),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
-      for (Volume.Entry entry : extractor) {
-        entry.extractTo(extractPath.resolve(entry.getName()), false);
-      }
+      Scopes.extractAllFilesTo(extractPath, extractor, false, existingFiles);
+//      for (Volume.Entry entry : extractor) {
+//        entry.extractTo(extractPath.resolve(entry.getName()), false, existingFiles);
+//      }
     } // auto-close extractor
 
     // verify

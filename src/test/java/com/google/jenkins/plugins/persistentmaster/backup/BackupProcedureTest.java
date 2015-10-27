@@ -16,7 +16,9 @@
 package com.google.jenkins.plugins.persistentmaster.backup;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -73,7 +75,7 @@ public class BackupProcedureTest {
     ArgumentCaptor<Path> backupVolumePathCaptor = ArgumentCaptor
         .forClass(Path.class);
     verify(volume).createNew(backupVolumePathCaptor.capture());
-    verify(scope).addFiles(same(jenkinsHome), same(volumeCreator));
+    verify(scope).addFiles(same(jenkinsHome), same(volumeCreator), any(List.class));
     ArgumentCaptor<String> backupVolumeNameCapture = ArgumentCaptor
         .forClass(String.class);
     verify(storage).storeFile(
@@ -83,6 +85,7 @@ public class BackupProcedureTest {
         eq(Arrays.asList(backupVolumeNameCapture.getValue())));
     verify(backupHistory).processHistoricBackups(
         same(storage), eq(backupVolumeNameCapture.getValue()));
+    verify(storage).updateExistingFilesMetaData(any(List.class));
     verifyNoMoreInteractions(volume, scope, storage, backupHistory);
     assertTrue(backupVolumeNameCapture.getValue().endsWith(".test"));
     assertTrue(backupTime.isBeforeNow());

@@ -52,6 +52,11 @@ public abstract class ForwardingStorage implements Storage {
   }
 
   @Override
+  public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
+   storage.updateExistingFilesMetaData(filenames);
+  }
+  
+  @Override
   public List<String> findLatestBackup() throws IOException {
     return storage.findLatestBackup();
   }
@@ -60,5 +65,11 @@ public abstract class ForwardingStorage implements Storage {
   public void updateLastBackup(List<String> filenames) throws IOException {
     storage.updateLastBackup(filenames);
   }
+  
+  @Override
+  public List<String> listMetadataForExistingFiles() throws IOException {
+    return storage.listMetadataForExistingFiles();
+  }
+
 
 }

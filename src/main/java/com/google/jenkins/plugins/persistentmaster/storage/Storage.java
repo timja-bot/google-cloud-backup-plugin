@@ -69,11 +69,27 @@ public interface Storage {
   public List<String> findLatestBackup() throws IOException;
 
   /**
+   * Book keeping of all the files that currently exist in the backup.
+   *
+   * @return the filenames of all files that exist in the most recent backup.
+   * @throws IOException if retrieving this list fails.
+   */
+  public List<String> listMetadataForExistingFiles() throws IOException;
+  
+  /**
    * Updates the filename of the latest backup stored in the storage.
    *
    * @param filenames the filenames of the latest backup stored in the storage.
    * @throws IOException if updating the filename of the latest backup fails.
    */
   public void updateLastBackup(List<String> filenames) throws IOException;
+  
+  /**
+   * Updates the filenames of all files that currently exist in the volume
+   *
+   * @param filenames the filenames of all the files currently in the volume.
+   * @throws IOException if updating the filename of the latest backup fails.
+   */
+  public void updateExistingFilesMetaData(List<String> filenames) throws IOException;
 
 }

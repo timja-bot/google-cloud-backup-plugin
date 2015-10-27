@@ -17,6 +17,7 @@ package com.google.jenkins.plugins.persistentmaster.scope;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
@@ -34,7 +35,7 @@ public interface Scope {
    * should be added to.
    * @throws IOException if some file operation fails.
    */
-  public void addFiles(Path jenkinsHome, Volume.Creator creator)
+  public void addFiles(Path jenkinsHome, Volume.Creator creator, List<String> existingFileNames)
       throws IOException;
 
   /**
@@ -49,5 +50,5 @@ public interface Scope {
    * @throws IOException if some file operation fails.
    */
   public void extractFiles(Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite) throws IOException;
+      boolean overwrite, List<String> existingFileNames) throws IOException;
 }

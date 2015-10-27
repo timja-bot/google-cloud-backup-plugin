@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -119,6 +120,7 @@ class ZipExtractor implements Volume.Extractor {
 
     @Override
     public void extractTo(Path target, boolean overwrite) throws IOException {
+      
       if (!overwrite && Files.exists(target)) {
         logger.finer("Path already exists, skipping extraction: " + target);
         return;
@@ -155,6 +157,7 @@ class ZipExtractor implements Volume.Extractor {
       logger.finer("Extracting file: " + target);
       try (InputStream inputStream = zipFile.getInputStream(zipArchiveEntry)) {
         Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+        logger.info(inputStream.toString());
       }
     }
 

@@ -75,6 +75,8 @@ public class RestoreProcedure {
     }
 
     List<String> latestBackupFiles = storage.findLatestBackup();
+    //List<String> allExistingFiles = storage.listMetadataForExistingFiles();
+    
     if (latestBackupFiles == null || latestBackupFiles.isEmpty()) {
       logger.warning("No backup files found, initializing new environment");
       initiationStrategy.initializeNewEnvironment(jenkinsHome);
@@ -111,12 +113,14 @@ public class RestoreProcedure {
 
   private void parallelFetchAndExtract(List<String> latestBackupFiles,
       Path tempDirectory) throws IOException {
+    List<String> existingFileNames = storage.listMetadataForExistingFiles();
+    logger.info("Listing the existing file names " + existingFileNames);
     // A ForkJoinPool should usually be shared, rather than creating a new one
     // every time. However, since the RestoreProcedure is only ever invoked
     // once per VM, creating a shared pool is really not necessary.
     ForkJoinPool forkJoinPool = new ForkJoinPool();
     try {
-      forkJoinPool.invoke(new FetchExtractChain(latestBackupFiles, storage,
+      forkJoinPool.invoke(new FetchExtractChain(latestBackupFiles, existingFileNames, storage,
           volume, scope, tempDirectory, jenkinsHome, overwrite));
     } catch (RuntimeException e) {
       // fork join pool wraps original exception in RuntimeException(s)
@@ -144,6 +148,7 @@ public class RestoreProcedure {
   private static class FetchExtractChain extends ForkJoinTask<Void> {
 
     private final List<String> latestBackupFiles;
+    private final List<String> existingFileNames;
     private final Storage storage;
     private final Volume volume;
     private final Scope scope;
@@ -152,9 +157,10 @@ public class RestoreProcedure {
     private final boolean overwrite;
 
     private FetchExtractChain(
-        List<String> latestBackupFiles, Storage storage, Volume volume,
+        List<String> latestBackupFiles,List<String> existingFileNames, Storage storage, Volume volume,
         Scope scope, Path tempDirectory, Path jenkinsHome, boolean overwrite) {
       this.latestBackupFiles = latestBackupFiles;
+      this.existingFileNames = existingFileNames;
       this.storage = storage;
       this.volume = volume;
       this.scope = scope;
@@ -179,7 +185,7 @@ public class RestoreProcedure {
       for (Iterator<String> it = latestBackupFiles.iterator(); it.hasNext(); ) {
         String file = it.next();
         FetchExtractTask fetchExtractTask = new FetchExtractTask(previousTask,
-            file, volume, scope, storage, jenkinsHome, tempDirectory,
+            file,  existingFileNames, volume, scope, storage, jenkinsHome, tempDirectory,
             overwrite);
         if (it.hasNext()) {
           fetchExtractTask.fork();
@@ -209,6 +215,7 @@ public class RestoreProcedure {
 
     private final FetchExtractTask previousTask;
     private final String backupFile;
+    private final List<String> existingFileNames;
     private final Volume volume;
     private final Scope scope;
     private final Storage storage;
@@ -216,11 +223,12 @@ public class RestoreProcedure {
     private final Path tempDirectory;
     private final boolean overwrite;
 
-    public FetchExtractTask(FetchExtractTask previousTask, String backupFile,
+    public FetchExtractTask(FetchExtractTask previousTask, String backupFile, List<String> existingFileNames,
         Volume volume, Scope scope, Storage storage, Path jenkinsHome,
         Path tempDirectory, boolean overwrite) {
       this.previousTask = previousTask;
       this.backupFile = backupFile;
+      this.existingFileNames = existingFileNames;
       this.volume = volume;
       this.scope = scope;
       this.storage = storage;
@@ -241,6 +249,7 @@ public class RestoreProcedure {
     @Override
     protected boolean exec() {
       Path volumePath = tempDirectory.resolve(backupFile);
+      logger.info("volumePath" + volumePath);
       try {
         logger.fine("Fetching backup volume for backup file: " + volumePath);
         storage.loadFile(backupFile, volumePath);
@@ -253,19 +262,19 @@ public class RestoreProcedure {
 
         logger.fine("Extracting backup volume");
         try (Volume.Extractor extractor = volume.extract(volumePath)) {
-          scope.extractFiles(jenkinsHome, extractor, overwrite);
+          scope.extractFiles(jenkinsHome, extractor, overwrite, existingFileNames);
         }  // auto-close extractor
       } catch (IOException e) {
         completeExceptionally(e);  // causes consecutive tasks to stop
         return false;
       } finally {
-        // cleanup after ourselves
+      /*  // cleanup after ourselves
         try {
           Files.deleteIfExists(volumePath);
         } catch (IOException e) {
           // be silent about cleanup errors, only log them
           logger.log(Level.FINE, "IOException while performing cleanup", e);
-        }
+        }*/
       }
       return true;
     }

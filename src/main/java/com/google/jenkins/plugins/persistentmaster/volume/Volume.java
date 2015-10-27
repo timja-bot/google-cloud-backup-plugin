@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Iterator;
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 /**
@@ -80,7 +82,7 @@ public interface Volume {
      * @throws IOException if some file operation fails.
      */
     public void addFile(Path file, String pathInVolume,
-        @Nullable BasicFileAttributes attrs) throws IOException;
+        @Nullable BasicFileAttributes attrs, List<String> existingFileMetadata) throws IOException;
 
     /**
      * Returns the number of files that have been added to the volume.
@@ -172,6 +174,7 @@ public interface Volume {
      * @param target the target path, where the contents should be extracted.
      * @param overwrite whether the operation should overwrite existing files
      * when a conflict is detected.
+     * @param Checking if the file actually should exist 
      * @throws IOException if some file operation fails.
      */
     public void extractTo(Path target, boolean overwrite) throws IOException;
