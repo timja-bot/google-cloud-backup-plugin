@@ -99,18 +99,18 @@ public class ZipVolumeTest {
   public void testCreateAndExtractZipArchive() throws Exception {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
-    List<String> existingFiles = new ArrayList<>();
+    List<String> existingFiles = Arrays.asList("nonEmptyDir","emptyDir", "fileInRoot", "nonEmptyDir/fileInDir","validSymlink","invalidSymlink");
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
-      creator.addFile(nonEmptyDir, "nonEmptyDir", null, existingFiles);
-      creator.addFile(emptyDir, "emptyDir", null, existingFiles);
-      creator.addFile(fileInRoot, "fileInRoot", null, existingFiles);
-      creator.addFile(fileInDir, "nonEmptyDir/fileInDir", null, existingFiles);
+      creator.addFile(nonEmptyDir, "nonEmptyDir", null);
+      creator.addFile(emptyDir, "emptyDir", null);
+      creator.addFile(fileInRoot, "fileInRoot", null);
+      creator.addFile(fileInDir, "nonEmptyDir/fileInDir", null);
       creator.addFile(validSymlink, "validSymlink",
           Files.readAttributes(validSymlink, BasicFileAttributes.class,
-              LinkOption.NOFOLLOW_LINKS), existingFiles);
+              LinkOption.NOFOLLOW_LINKS));
       creator.addFile(invalidSymlink, "invalidSymlink",
           Files.readAttributes(invalidSymlink, BasicFileAttributes.class,
-              LinkOption.NOFOLLOW_LINKS), existingFiles);
+              LinkOption.NOFOLLOW_LINKS));
     }  // auto-close creator
     assertTrue(Files.exists(volumePath));
     
@@ -120,9 +120,6 @@ public class ZipVolumeTest {
     Files.createDirectory(extractPath);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
       Scopes.extractAllFilesTo(extractPath, extractor, true, existingFiles);
-//      for (Volume.Entry entry : extractor) {
-//        entry.extractTo(extractPath.resolve(entry.getName()), true, existingFiles);
-//      }
     } // auto-close extractor
 
     // verify
@@ -142,14 +139,23 @@ public class ZipVolumeTest {
     assertTrue(Files.notExists(extractPath.resolve("invalidSymlink")));
   }
 
+  
+  @Test
+  public void a() throws Exception {
+    String a = "plugins/maven-plugin/WEB-INF/lib/commons-cli-1.2.jar";
+    List<String> b =  Arrays.asList("v","plugins/maven-plugin/WEB-INF/lib/commons-cli-1.2.jar");
+    
+    assertTrue(b.contains(a));
+  }
+  
   @Test
   public void testCreateAndExtractZipArchiveWithConflict() throws Exception {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
-    List<String> existingFiles = new ArrayList<>();
+    List<String> existingFiles = Arrays.asList("existingFile","newFile");
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
-      creator.addFile(existingFile, "existingFile", null, existingFiles);
-      creator.addFile(newFile, "newFile", null, existingFiles);
+      creator.addFile(existingFile, "existingFile", null);
+      creator.addFile(newFile, "newFile", null);
     }  // auto-close creator
     assertTrue(Files.exists(volumePath));
 

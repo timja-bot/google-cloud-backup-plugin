@@ -75,7 +75,6 @@ public class RestoreProcedure {
     }
 
     List<String> latestBackupFiles = storage.findLatestBackup();
-    //List<String> allExistingFiles = storage.listMetadataForExistingFiles();
     
     if (latestBackupFiles == null || latestBackupFiles.isEmpty()) {
       logger.warning("No backup files found, initializing new environment");
@@ -113,8 +112,9 @@ public class RestoreProcedure {
 
   private void parallelFetchAndExtract(List<String> latestBackupFiles,
       Path tempDirectory) throws IOException {
+   
     List<String> existingFileNames = storage.listMetadataForExistingFiles();
-    logger.info("Listing the existing file names " + existingFileNames);
+    logger.info("Listing the existing file names " + existingFileNames.size());
     // A ForkJoinPool should usually be shared, rather than creating a new one
     // every time. However, since the RestoreProcedure is only ever invoked
     // once per VM, creating a shared pool is really not necessary.
@@ -249,7 +249,7 @@ public class RestoreProcedure {
     @Override
     protected boolean exec() {
       Path volumePath = tempDirectory.resolve(backupFile);
-      logger.info("volumePath" + volumePath);
+
       try {
         logger.fine("Fetching backup volume for backup file: " + volumePath);
         storage.loadFile(backupFile, volumePath);

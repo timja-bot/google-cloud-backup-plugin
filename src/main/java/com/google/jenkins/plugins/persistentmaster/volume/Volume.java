@@ -82,7 +82,7 @@ public interface Volume {
      * @throws IOException if some file operation fails.
      */
     public void addFile(Path file, String pathInVolume,
-        @Nullable BasicFileAttributes attrs, List<String> existingFileMetadata) throws IOException;
+        @Nullable BasicFileAttributes attrs) throws IOException;
 
     /**
      * Returns the number of files that have been added to the volume.

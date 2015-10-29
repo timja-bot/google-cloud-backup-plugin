@@ -57,10 +57,10 @@ public class MultiScope implements Scope {
           .addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
             @Override
             public void addFile(
-                Path file, String pathInVolume, BasicFileAttributes attrs, List<String> existingFileNames)
+                Path file, String pathInVolume, BasicFileAttributes attrs)
                 throws IOException {
               super.addFile(
-                  file, subScope.getVolumePrefix() + pathInVolume, attrs, existingFileNames);
+                  file, subScope.getVolumePrefix() + pathInVolume, attrs);
             }
           }, existingFileNames);
     }

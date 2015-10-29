@@ -80,17 +80,17 @@ public class MultiScopeTest {
         .forClass(Volume.Creator.class);
     verify(scope1).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture(), any(List.class));
     assertNotSame(creator, volumeCreatorCaptor.getValue());
-    volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope1", null, null);
+    volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope1", null);
     verify(creator).addFile(same(jenkinsHome), eq("scope1/fileOfScope1"),
-        any(BasicFileAttributes.class), any(List.class));
+        any(BasicFileAttributes.class));
 
     // scope2
     volumeCreatorCaptor = ArgumentCaptor.forClass(Volume.Creator.class);
     verify(scope2).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture(), any(List.class));
     assertNotSame(creator, volumeCreatorCaptor.getValue());
-    volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope2", null, null);
+    volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope2", null);
     verify(creator).addFile(same(jenkinsHome), eq("scope2/fileOfScope2"),
-        any(BasicFileAttributes.class), any(List.class));
+        any(BasicFileAttributes.class));
   }
 
   @Test

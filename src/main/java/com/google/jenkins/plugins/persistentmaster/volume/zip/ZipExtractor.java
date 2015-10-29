@@ -15,6 +15,12 @@
  */
 package com.google.jenkins.plugins.persistentmaster.volume.zip;
 
+import com.google.common.base.Preconditions;
+import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -22,14 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-
-import com.google.common.base.Preconditions;
-import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 /**
  * Implementation of {@link Volume.Extractor} for ZIP volumes.
@@ -157,7 +156,6 @@ class ZipExtractor implements Volume.Extractor {
       logger.finer("Extracting file: " + target);
       try (InputStream inputStream = zipFile.getInputStream(zipArchiveEntry)) {
         Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
-        logger.info(inputStream.toString());
       }
     }
 

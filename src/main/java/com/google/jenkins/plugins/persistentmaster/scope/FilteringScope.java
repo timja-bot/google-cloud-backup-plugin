@@ -46,10 +46,10 @@ public class FilteringScope extends ForwardingScope {
     super.addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
       @Override
       public void addFile(
-          Path file, String pathInVolume, BasicFileAttributes attrs, List<String> existingFileNames)
+          Path file, String pathInVolume, BasicFileAttributes attrs)
           throws IOException {
         if (!exclusions.contains(pathInVolume)) {
-          super.addFile(file, pathInVolume, attrs, existingFileNames);
+          super.addFile(file, pathInVolume, attrs);
         }
       }
     }, existingFileNames);

@@ -115,7 +115,7 @@ public class BackupProcedure {
         fileCount = creator.getFileCount();
       } // auto-close creator
 
-      logger.info("Updating all existing files" + existingFileNames + "scope is"+ scope.getClass());
+      logger.info("Updating all existing files scope is"+ scope.getClass()+ existingFileNames.size());
       storage.updateExistingFilesMetaData(existingFileNames);
       
       if (fileCount > 0) {

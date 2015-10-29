@@ -18,7 +18,6 @@ package com.google.jenkins.plugins.persistentmaster.volume;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
 
 /**
  * Forwarding class for {@link Volume.Creator}. Allows to wrap an instance of
@@ -39,9 +38,9 @@ public abstract class ForwardingVolumeCreator implements Volume.Creator {
   }
 
   @Override
-  public void addFile(Path file, String pathInVolume, BasicFileAttributes attrs, List<String> existingFileMetadata)
+  public void addFile(Path file, String pathInVolume, BasicFileAttributes attrs)
       throws IOException {
-    creator.addFile(file, pathInVolume, attrs, existingFileMetadata);
+    creator.addFile(file, pathInVolume, attrs);
   }
 
   @Override

@@ -15,23 +15,23 @@
  */
 package com.google.jenkins.plugins.persistentmaster.volume.zip;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
+import com.google.common.base.Preconditions;
+import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import org.apache.commons.compress.archivers.zip.UnixStat;
 import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
-import com.google.common.base.Preconditions;
-import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.logging.Logger;
+
+import javax.annotation.Nullable;
 
 /**
  * Implementation of {@link Volume.Creator} for ZIP volumes.
@@ -61,9 +61,8 @@ class ZipCreator implements Volume.Creator {
 
   @Override
   public void addFile(Path file, String pathInVolume,
-      @Nullable BasicFileAttributes attrs, List<String> existingFileMetadata) throws IOException {
+      @Nullable BasicFileAttributes attrs) throws IOException {
     Preconditions.checkState(!closed, "Volume closed");
-    existingFileMetadata.add(pathInVolume);
     if (attrs == null) {  // make sure attrs are available
       attrs = Files.readAttributes(file, BasicFileAttributes.class);
     }
@@ -108,7 +107,6 @@ class ZipCreator implements Volume.Creator {
   private void copyRegularFile(Path file, String filenameInZip)
       throws IOException {
     logger.finer("Adding file: " + file + " with filename: " + filenameInZip);
-    logger.info(" Reg file Adding file: " + file + " with filename: " + filenameInZip);
     ZipArchiveEntry entry = new ZipArchiveEntry(filenameInZip);
     zipStream.putArchiveEntry(entry);
     Files.copy(file, zipStream);

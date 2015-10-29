@@ -82,7 +82,7 @@ public class GcloudGcsStorage implements Storage {
     for (String file : gsutilOut) {
       // remove gs://bucket/ from the beginning of every filename
       file = file.substring(urlPrefixLength);
-      if (!Objects.equals(file, LAST_BACKUP_FILE)) { // exclude internal file
+      if (!Objects.equals(file, LAST_BACKUP_FILE) && !Objects.equals(file, ALL_EXISTING_FILES)) { // exclude internal files
         files.add(file);
       }
     }
@@ -114,17 +114,17 @@ public class GcloudGcsStorage implements Storage {
   @Override
   public List<String> listMetadataForExistingFiles() throws IOException {
     List<String> content = null;
+    List<String> files = new LinkedList<>();
     try {
       content = gsutil("cat", gsUrlPrefix + ALL_EXISTING_FILES);
     } catch (IOException e) {
       logger.log(Level.WARNING, "Exception while loading existing file. Files previously deleted may load", e);
-      return null;
+      return files;
     }
     if (content.isEmpty()) {
       logger.fine("Existing is empty. Looks like deleted files may load");
-      return null;
+      return files;
     }
-    List<String> files = new LinkedList<>();
     for (String line : content) {
       if (!line.trim().isEmpty() && !line.startsWith(COMMENT_PREFIX)) {
         files.add(line.trim());

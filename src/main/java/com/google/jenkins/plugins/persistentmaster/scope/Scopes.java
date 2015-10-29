@@ -15,7 +15,8 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
-import java.io.File;
+import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
@@ -26,8 +27,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 /**
  * Utility class for {@link Scope}. Provides methods for conveniently adding a
@@ -76,8 +75,10 @@ public final class Scopes {
           try (DirectoryStream<Path> directoryStream = Files
               .newDirectoryStream(dir)) {
             if (!directoryStream.iterator().hasNext()) {
+              logger.info("In empty directory " + dir);
               logger.finer("Adding empty directory: " + dir);
-              creator.addFile(dir, basePath.relativize(dir).toString(), attrs, existingFileMetadata);
+              existingFileMetadata.add(basePath.relativize(dir).toString());
+              creator.addFile(dir, basePath.relativize(dir).toString(), attrs);
             }
           } // auto-close directoryStream
           return FileVisitResult.CONTINUE;
@@ -91,7 +92,8 @@ public final class Scopes {
           logger.finer("Skipping excluded file: " + file);
         } else {
           logger.finer("Adding file: " + file);
-          creator.addFile(file, basePath.relativize(file).toString(), attrs, existingFileMetadata);
+          existingFileMetadata.add(basePath.relativize(file).toString());
+          creator.addFile(file, basePath.relativize(file).toString(), attrs);
         }
         return FileVisitResult.CONTINUE;
       }
@@ -121,15 +123,18 @@ public final class Scopes {
   public static void extractAllFilesTo(
       Path targetDir, Volume.Extractor extractor, boolean overwrite, List<String> existingFileNames)
       throws IOException {
+    int matchFound = 0, matchUnfound = 0;
+   // logger.info("existing file names" + existingFileNames);
     for (Volume.Entry entry : extractor) {
-      logger.info("Entry is"+ entry.getName());
-      //logger.info("existing file names" + existingFileNames);
-      if(!existingFileNames.contains(entry.getName())){
-        logger.info("Ohh no Extracted file is" +entry.getName());
+      if(!existingFileNames.isEmpty() && !existingFileNames.contains(entry.getName())){
+        logger.info ("Unfound match for" + entry.getName());
+        matchUnfound ++;
         continue;
       }
+      matchFound ++;
       entry.extractTo(targetDir.resolve(entry.getName()), overwrite);
     }
+    logger.info ("!! Matches found !!!!!" + matchFound + "Unfound matches" + matchUnfound);
   }
 
 }
