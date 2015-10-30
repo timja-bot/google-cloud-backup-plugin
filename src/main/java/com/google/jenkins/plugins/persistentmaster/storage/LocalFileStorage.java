@@ -34,9 +34,12 @@ import com.google.common.base.Objects;
 public class LocalFileStorage implements Storage {
 
   private static final String LAST_BACKUP_FILE = "last-backup";
+  private static final String EXISTING_FILE_METADATA = "existing-files-metadata";
   private static final String COMMENT_PREFIX = "#";
   private static final String COMMENT_LINE =
       COMMENT_PREFIX + " This file contains the filename of the last backup.";
+  private static final String EXISTING_FILES_COMMENT_LINE =
+      COMMENT_PREFIX + " This file contains the existing files meta data.";
 
   private final Path storageDir;
 
@@ -77,11 +80,21 @@ public class LocalFileStorage implements Storage {
   }
 
   @Override
+  public List<String> listMetadataForExistingFiles() throws IOException {
+    List<String> fileMetadata = listDataFromStorage(LAST_BACKUP_FILE);
+    return (fileMetadata == null) ? new LinkedList<String>():fileMetadata;
+  }
+
+  @Override
   public List<String> findLatestBackup() throws IOException {
-    Path lastBackupPath = storageDir.resolve(LAST_BACKUP_FILE);
-    if (Files.exists(lastBackupPath)) {
+    return listDataFromStorage(LAST_BACKUP_FILE);
+  }
+  
+  private List<String> listDataFromStorage(String name) throws IOException {
+    Path path = storageDir.resolve(name);
+    if (Files.exists(path)) {
       List<String> lines =
-          Files.readAllLines(lastBackupPath, StandardCharsets.UTF_8);
+          Files.readAllLines(path, StandardCharsets.UTF_8);
       List<String> filenames = new LinkedList<>();
       for (String line : lines) {
         if (line != null && !line.trim().isEmpty()
@@ -91,33 +104,31 @@ public class LocalFileStorage implements Storage {
       }
       return filenames;
     }
-    return null;  // last backup reference not found
+    return null; 
   }
-  
  
-  @Override
-  public List<String> listMetadataForExistingFiles() throws IOException {
-    // TODO(ckerur): Auto-generated method stub
-    return null;
-  }
 
   @Override
   public void updateLastBackup(List<String> filenames) throws IOException {
-    Path lastBackupPath = storageDir.resolve(LAST_BACKUP_FILE);
+    updateObject(filenames, LAST_BACKUP_FILE, COMMENT_LINE);
+  }
+  
+  @Override
+  public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
+    updateObject(filenames, EXISTING_FILE_METADATA , EXISTING_FILES_COMMENT_LINE);
+    
+  }
+  
+  public void updateObject(List<String> filenames, String name, String comment) throws IOException {
+    Path path = storageDir.resolve(name);
     Deque<String> content = new LinkedList<>(filenames);
-    content.addFirst(COMMENT_LINE);
-    // write filename of last backup to file, overwriting any existing content
-    Files.write(lastBackupPath, content, StandardCharsets.UTF_8,
+    content.addFirst(comment);
+    // write to file, overwriting any existing content
+    Files.write(path, content, StandardCharsets.UTF_8,
         StandardOpenOption.CREATE, StandardOpenOption.WRITE,
         StandardOpenOption.TRUNCATE_EXISTING);
   }
 
-  
-  @Override
-  public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
-    // TODO(ckerur): Auto-generated method stub
-   
-  }
 
   @Override
   public boolean equals(Object o) {

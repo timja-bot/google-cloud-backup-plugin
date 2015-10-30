@@ -74,6 +74,8 @@ public class RestoreProcedure {
       return;
     }
 
+    List<String> existingFileMetadata = storage.listMetadataForExistingFiles();
+    logger.info("Listing the existing file names " + existingFileMetadata.size());
     List<String> latestBackupFiles = storage.findLatestBackup();
     
     if (latestBackupFiles == null || latestBackupFiles.isEmpty()) {
@@ -92,7 +94,7 @@ public class RestoreProcedure {
           : Files.createTempDirectory(scratchDir, TMP_DIR_PREFIX);
       logger.fine("Using temp directory: " + tempDirectory);
       try {
-        parallelFetchAndExtract(latestBackupFiles, tempDirectory);
+        parallelFetchAndExtract(latestBackupFiles, existingFileMetadata, tempDirectory);
       } finally {
         // cleanup after ourselves
         try {
@@ -110,17 +112,16 @@ public class RestoreProcedure {
     logger.fine("Finished environment setup for jenkins");
   }
 
-  private void parallelFetchAndExtract(List<String> latestBackupFiles,
+  private void parallelFetchAndExtract(List<String> latestBackupFiles,List<String> existingFileMetadata,
       Path tempDirectory) throws IOException {
    
-    List<String> existingFileNames = storage.listMetadataForExistingFiles();
-    logger.info("Listing the existing file names " + existingFileNames.size());
+   
     // A ForkJoinPool should usually be shared, rather than creating a new one
     // every time. However, since the RestoreProcedure is only ever invoked
     // once per VM, creating a shared pool is really not necessary.
     ForkJoinPool forkJoinPool = new ForkJoinPool();
     try {
-      forkJoinPool.invoke(new FetchExtractChain(latestBackupFiles, existingFileNames, storage,
+      forkJoinPool.invoke(new FetchExtractChain(latestBackupFiles, existingFileMetadata, storage,
           volume, scope, tempDirectory, jenkinsHome, overwrite));
     } catch (RuntimeException e) {
       // fork join pool wraps original exception in RuntimeException(s)
@@ -148,7 +149,7 @@ public class RestoreProcedure {
   private static class FetchExtractChain extends ForkJoinTask<Void> {
 
     private final List<String> latestBackupFiles;
-    private final List<String> existingFileNames;
+    private final List<String> existingFileMetadata;
     private final Storage storage;
     private final Volume volume;
     private final Scope scope;
@@ -157,10 +158,10 @@ public class RestoreProcedure {
     private final boolean overwrite;
 
     private FetchExtractChain(
-        List<String> latestBackupFiles,List<String> existingFileNames, Storage storage, Volume volume,
+        List<String> latestBackupFiles,List<String> existingFileMetadata, Storage storage, Volume volume,
         Scope scope, Path tempDirectory, Path jenkinsHome, boolean overwrite) {
       this.latestBackupFiles = latestBackupFiles;
-      this.existingFileNames = existingFileNames;
+      this.existingFileMetadata = existingFileMetadata;
       this.storage = storage;
       this.volume = volume;
       this.scope = scope;
@@ -185,7 +186,7 @@ public class RestoreProcedure {
       for (Iterator<String> it = latestBackupFiles.iterator(); it.hasNext(); ) {
         String file = it.next();
         FetchExtractTask fetchExtractTask = new FetchExtractTask(previousTask,
-            file,  existingFileNames, volume, scope, storage, jenkinsHome, tempDirectory,
+            file,  existingFileMetadata, volume, scope, storage, jenkinsHome, tempDirectory,
             overwrite);
         if (it.hasNext()) {
           fetchExtractTask.fork();
@@ -268,13 +269,13 @@ public class RestoreProcedure {
         completeExceptionally(e);  // causes consecutive tasks to stop
         return false;
       } finally {
-      /*  // cleanup after ourselves
+        // cleanup after ourselves
         try {
           Files.deleteIfExists(volumePath);
         } catch (IOException e) {
           // be silent about cleanup errors, only log them
           logger.log(Level.FINE, "IOException while performing cleanup", e);
-        }*/
+        }
       }
       return true;
     }

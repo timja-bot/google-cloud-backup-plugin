@@ -34,13 +34,13 @@ public abstract class ForwardingScope implements Scope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileNames) throws IOException {
-    scope.addFiles(jenkinsHome, creator, existingFileNames);
+  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileMetadata) throws IOException {
+    scope.addFiles(jenkinsHome, creator, existingFileMetadata);
   }
 
   @Override
   public void extractFiles(Path jenkinsHome, Extractor extractor,
-      boolean overwrite, List<String> existingFiles) throws IOException {
-    scope.extractFiles(jenkinsHome, extractor, overwrite, existingFiles);
+      boolean overwrite, List<String> existingFileMetadata) throws IOException {
+    scope.extractFiles(jenkinsHome, extractor, overwrite, existingFileMetadata);
   }
 }

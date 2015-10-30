@@ -81,6 +81,7 @@ public class RestoreProcedureTest {
     restoreProcedure.performRestore();
 
     verify(storage).findLatestBackup();
+    verify(storage).listMetadataForExistingFiles();
     verify(initiationStrategy).initializeNewEnvironment(eq(jenkinsHome));
     verifyNoMoreInteractions(initiationStrategy, volume, scope, storage);
   }

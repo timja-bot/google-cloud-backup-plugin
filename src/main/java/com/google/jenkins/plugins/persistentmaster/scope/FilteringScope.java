@@ -42,7 +42,7 @@ public class FilteringScope extends ForwardingScope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileNames) throws IOException {
+  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileMetadata) throws IOException {
     super.addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
       @Override
       public void addFile(
@@ -52,6 +52,6 @@ public class FilteringScope extends ForwardingScope {
           super.addFile(file, pathInVolume, attrs);
         }
       }
-    }, existingFileNames);
+    }, existingFileMetadata);
   }
 }

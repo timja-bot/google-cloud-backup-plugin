@@ -50,7 +50,7 @@ public class DefaultBackupScope extends ConfigurableScope {
   }
 
   @Override
-  public void addFiles(final Path jenkinsHome, Volume.Creator creator, List<String> existingFileNames)
+  public void addFiles(final Path jenkinsHome, Volume.Creator creator, List<String> existingFileMetadata)
       throws IOException {
     Set<Path> excludedDirs = new HashSet<>();
     // exclude tmp dirs from build slaves
@@ -70,13 +70,13 @@ public class DefaultBackupScope extends ConfigurableScope {
     // exclude workspaces inside of branches
     excludedDirs.add(jenkinsHome.resolve("jobs/*/branches/*/workspace"));
 
-    Scopes.addAllFilesIn(jenkinsHome, creator, excludedDirs, existingFileNames);
+    Scopes.addAllFilesIn(jenkinsHome, creator, excludedDirs, existingFileMetadata);
   }
 
   @Override
   public void extractFiles(Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite, List<String> existingFileNames) throws IOException {
-    Scopes.extractAllFilesTo(jenkinsHome, extractor, overwrite, existingFileNames);
+      boolean overwrite, List<String> existingFileMetadata) throws IOException {
+    Scopes.extractAllFilesTo(jenkinsHome, extractor, overwrite, existingFileMetadata);
   }
 
   /**

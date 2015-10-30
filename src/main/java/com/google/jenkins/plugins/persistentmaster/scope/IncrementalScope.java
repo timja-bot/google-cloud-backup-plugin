@@ -52,7 +52,7 @@ public class IncrementalScope extends ForwardingScope {
 
   @Override
   public void addFiles(Path jenkinsHome, Volume.Creator creator,
-      final List<String> existingFileNames) throws IOException {
+      final List<String> existingFileMetadata) throws IOException {
     super.addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
       @Override
       public void addFile(Path file, String pathInVolume, BasicFileAttributes attrs)
@@ -62,6 +62,6 @@ public class IncrementalScope extends ForwardingScope {
           super.addFile(file, pathInVolume, attrs);
         }
       }
-    }, existingFileNames);
+    }, existingFileMetadata);
   }
 }

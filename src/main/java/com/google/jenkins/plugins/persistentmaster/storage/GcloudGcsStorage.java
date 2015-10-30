@@ -15,8 +15,6 @@
  */
 package com.google.jenkins.plugins.persistentmaster.storage;
 
-import com.google.common.collect.Lists;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -41,12 +39,12 @@ public class GcloudGcsStorage implements Storage {
   private static final Logger logger = Logger.getLogger(GcloudGcsStorage.class.getName());
 
   private static final String LAST_BACKUP_FILE = "last-backup";
-  private static final String ALL_EXISTING_FILES = "existing-files";
+  private static final String EXISTING_FILE_METADATA = "existing-files-metadata";
   private static final String COMMENT_PREFIX = "#";
   private static final String COMMENT_LINE =
       COMMENT_PREFIX + " This file contains the filename of the last backup.";
-//  private static final String EXISTING_FILES_COMMENT_LINE =
-//      COMMENT_PREFIX + " This file contains the existing files meta data.";
+  private static final String EXISTING_FILES_COMMENT_LINE =
+      COMMENT_PREFIX + " This file contains the existing files meta data.";
   private static final String GSUTIL_CMD = "gsutil";
   private static final String TMP_DIR_PREFIX = "persistent-master-backup-plugin";
 
@@ -82,47 +80,36 @@ public class GcloudGcsStorage implements Storage {
     for (String file : gsutilOut) {
       // remove gs://bucket/ from the beginning of every filename
       file = file.substring(urlPrefixLength);
-      if (!Objects.equals(file, LAST_BACKUP_FILE) && !Objects.equals(file, ALL_EXISTING_FILES)) { // exclude internal files
+      // exclude internal files
+      if (!Objects.equals(file, LAST_BACKUP_FILE) && !Objects.equals(file, EXISTING_FILE_METADATA)) {
         files.add(file);
       }
     }
     return files;
   }
-
+  
+  
   @Override
-  public List<String> findLatestBackup() throws IOException {
-    List<String> content = null;
+  public List<String> findLatestBackup() {
+    List<String> files;
     try {
-      content = gsutil("cat", gsUrlPrefix + LAST_BACKUP_FILE);
+      files = getObjectFromGCS(LAST_BACKUP_FILE);
     } catch (IOException e) {
       logger.log(Level.FINE, "Exception while loading last-backup file", e);
       return null;
     }
-    if (content.isEmpty()) {
+    if (files.isEmpty()) {
       logger.fine("Last-backup file is empty, no backups available.");
       return null;
     }
-    List<String> files = new LinkedList<>();
-    for (String line : content) {
-      if (!line.trim().isEmpty() && !line.startsWith(COMMENT_PREFIX)) {
-        files.add(line.trim());
-      }
-    }
     return files;
   }
 
-  @Override
-  public List<String> listMetadataForExistingFiles() throws IOException {
+  private List<String> getObjectFromGCS(String name) throws IOException {
     List<String> content = null;
     List<String> files = new LinkedList<>();
-    try {
-      content = gsutil("cat", gsUrlPrefix + ALL_EXISTING_FILES);
-    } catch (IOException e) {
-      logger.log(Level.WARNING, "Exception while loading existing file. Files previously deleted may load", e);
-      return files;
-    }
+    content = gsutil("cat", gsUrlPrefix + name);
     if (content.isEmpty()) {
-      logger.fine("Existing is empty. Looks like deleted files may load");
       return files;
     }
     for (String line : content) {
@@ -132,28 +119,53 @@ public class GcloudGcsStorage implements Storage {
     }
     return files;
   }
-
   
-
   @Override
-  public void updateLastBackup(List<String> filenames) throws IOException {
-    logger.fine("Updating last-backup file.");
-    List<String> content = new ArrayList<>(filenames.size() + 1);
-    content.add(COMMENT_LINE);
-    content.addAll(filenames);
-    final Path tempDirectory = Files.createTempDirectory(TMP_DIR_PREFIX);
-    final Path tempFilePath = tempDirectory.resolve(LAST_BACKUP_FILE);
-    logger.fine("Using temp file: " + tempFilePath);
+  public List<String> listMetadataForExistingFiles() throws IOException {
+    List<String> files;
     try {
-      Files.write(tempFilePath, content, StandardCharsets.UTF_8);
-      gsutil("cp", tempFilePath.toString(), gsUrlPrefix + LAST_BACKUP_FILE);
-    } finally {
-      logger.fine("Cleaning up temp file & directory.");
-      Files.deleteIfExists(tempFilePath);
-      Files.deleteIfExists(tempDirectory);
+      files = getObjectFromGCS(EXISTING_FILE_METADATA);
+    } catch (IOException e) {
+      logger.log(Level.FINE, "Exception while loading existing file metatdata. Files previously deleted may load", e);
+      return null;
     }
+    if (files.isEmpty()) {
+      logger.fine("Either this is brand new, or existing files meta data backup is corrupted");
+      return null;
+    }
+    return files;
+    
   }
 
+//  @Override
+//  public List<String> listMetadataForExistingFiles() throws IOException {
+//    List<String> content = null;
+//    List<String> files = new LinkedList<>();
+//    try {
+//      content = gsutil("cat", gsUrlPrefix + EXISTING_FILE_METADATA);
+//    } catch (IOException e) {
+//      logger.log(Level.WARNING, "Exception while loading existing file metatdata. Files previously deleted may load", e);
+//      return files;
+//    }
+//    if (content.isEmpty()) {
+//      logger.fine("Existing is empty. Looks like deleted files may load");
+//      return files;
+//    }
+//    for (String line : content) {
+//      if (!line.trim().isEmpty() && !line.startsWith(COMMENT_PREFIX)) {
+//        files.add(line.trim());
+//      }
+//    }
+//    return files;
+//  }
+
+  
+  @Override
+  public void updateLastBackup(List<String> filenames) throws IOException {
+      logger.fine("Updating last-backup file.");
+      uploadObjectToGCSS(filenames, LAST_BACKUP_FILE, COMMENT_LINE);
+  }
+  
   /* (non-Javadoc)
    * @see com.google.jenkins.plugins.persistentmaster.storage.Storage#updateExistingFilesMetaData(java.util.List)
    */
@@ -161,22 +173,48 @@ public class GcloudGcsStorage implements Storage {
   public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
     logger.fine("Updating existing files meta data.");
     logger.info("Updating existing files meta data.");
+    uploadObjectToGCSS(filenames, EXISTING_FILE_METADATA, EXISTING_FILES_COMMENT_LINE);
+    
+  }
+  
+
+  public void uploadObjectToGCSS(List<String> filenames, String name, String comment) throws IOException {
     List<String> content = new ArrayList<>(filenames.size() + 1);
-    content.add(COMMENT_LINE);
+    content.add(comment);
     content.addAll(filenames);
     final Path tempDirectory = Files.createTempDirectory(TMP_DIR_PREFIX);
-    final Path tempFilePath = tempDirectory.resolve(ALL_EXISTING_FILES);
+    final Path tempFilePath = tempDirectory.resolve(name);
     logger.fine("Using temp file: " + tempFilePath);
     try {
       Files.write(tempFilePath, content, StandardCharsets.UTF_8);
-      gsutil("cp", tempFilePath.toString(), gsUrlPrefix + ALL_EXISTING_FILES);
+      gsutil("cp", tempFilePath.toString(), gsUrlPrefix + name);
     } finally {
       logger.fine("Cleaning up temp file & directory.");
       Files.deleteIfExists(tempFilePath);
       Files.deleteIfExists(tempDirectory);
     }
   }
-    
+  
+//
+//  @Override
+//  public void updateLastBackup(List<String> filenames) throws IOException {
+//    logger.fine("Updating last-backup file.");
+//    List<String> content = new ArrayList<>(filenames.size() + 1);
+//    content.add(COMMENT_LINE);
+//    content.addAll(filenames);
+//    final Path tempDirectory = Files.createTempDirectory(TMP_DIR_PREFIX);
+//    final Path tempFilePath = tempDirectory.resolve(LAST_BACKUP_FILE);
+//    logger.fine("Using temp file: " + tempFilePath);
+//    try {
+//      Files.write(tempFilePath, content, StandardCharsets.UTF_8);
+//      gsutil("cp", tempFilePath.toString(), gsUrlPrefix + LAST_BACKUP_FILE);
+//    } finally {
+//      logger.fine("Cleaning up temp file & directory.");
+//      Files.deleteIfExists(tempFilePath);
+//      Files.deleteIfExists(tempDirectory);
+//    }
+//  }
+
   private List<String> gsutil(String... params) throws IOException {
     ProcessBuilder builder = new ProcessBuilder(GSUTIL_CMD);
     for (String param : params) {

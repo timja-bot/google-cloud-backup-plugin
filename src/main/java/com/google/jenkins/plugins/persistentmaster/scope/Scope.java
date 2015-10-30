@@ -50,5 +50,5 @@ public interface Scope {
    * @throws IOException if some file operation fails.
    */
   public void extractFiles(Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite, List<String> existingFileNames) throws IOException;
+      boolean overwrite, List<String> existingFileMetadata) throws IOException;
 }
