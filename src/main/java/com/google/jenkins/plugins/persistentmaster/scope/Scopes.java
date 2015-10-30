@@ -29,9 +29,7 @@ import java.util.logging.Logger;
  * to a target path.
  */
 public final class Scopes {
-
-  private static final Logger logger = Logger.getLogger(
-      Scopes.class.getName());
+  private static final Logger logger = Logger.getLogger(Scopes.class.getName());
 
   private Scopes() {}
 
@@ -44,17 +42,15 @@ public final class Scopes {
    * Volume.
    * @param excludedDirs files and/or directories which should be excluded.
    * These must be full (absolute) paths.
+   * @param existingFileMetadata the source of truth file for what data should be restored
    * @throws IOException if some file operation fails.
    */
-  public static void addAllFilesIn(
-      final Path basePath,
-      final Volume.Creator creator,
+  public static void addAllFilesIn(final Path basePath, final Volume.Creator creator,
       final Set<Path> excludedDirs, final List<String> existingFileMetadata) throws IOException {
     Files.walkFileTree(basePath, new SimpleFileVisitor<Path>() {
-
       @Override
-      public FileVisitResult preVisitDirectory(
-          Path dir, BasicFileAttributes attrs) throws IOException {
+      public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+          throws IOException {
         if (attrs.isSymbolicLink()) {
           // don't follow symlinks, rather store them as such
           logger.finer("Skipping symlink directory: " + dir);
@@ -67,10 +63,8 @@ public final class Scopes {
           // check for an empty directory, because in that case we must
           // explicitly add the directory to the ZIP file, otherwise it will
           // get lost.
-          try (DirectoryStream<Path> directoryStream = Files
-              .newDirectoryStream(dir)) {
+          try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dir)) {
             if (!directoryStream.iterator().hasNext()) {
-              logger.info("In empty directory " + dir);
               logger.finer("Adding empty directory: " + dir);
               existingFileMetadata.add(basePath.relativize(dir).toString());
               creator.addFile(dir, basePath.relativize(dir).toString(), attrs);
@@ -81,8 +75,7 @@ public final class Scopes {
       }
 
       @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-          throws IOException {
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (excludedDirs.contains(file)) {
           logger.finer("Skipping excluded file: " + file);
         } else {
@@ -94,8 +87,7 @@ public final class Scopes {
       }
 
       @Override
-      public FileVisitResult visitFileFailed(Path file, IOException exc)
-          throws IOException {
+      public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
         if (excludedDirs.contains(file)) {
           return FileVisitResult.SKIP_SUBTREE;
         }
@@ -113,18 +105,20 @@ public final class Scopes {
    * the Volume.
    * @param overwrite whether the operation should overwrite existing files
    * when a conflict is detected.
+   * @param existingFileMetadata the source of truth file for what data should be restored
    * @throws IOException if some file operation fails.
    */
-  public static void extractAllFilesTo(
-      Path targetDir, Volume.Extractor extractor, boolean overwrite, List<String> existingFileNames)
-      throws IOException {
+  public static void extractAllFilesTo(Path targetDir, Volume.Extractor extractor,
+      boolean overwrite, List<String> existingFileMetadata) throws IOException {
+    // If this is empty, there could be a bug during backup - but we should not block the rest of
+    // the restoration. We have already logged this earlier, so just move on
+    boolean isExistingFileMetadataEmpty = existingFileMetadata.isEmpty();
     for (Volume.Entry entry : extractor) {
-      if(!existingFileNames.isEmpty() && !existingFileNames.contains(entry.getName())){
-        logger.info ("Unfound match for" + entry.getName());
+      if (!isExistingFileMetadataEmpty && !existingFileMetadata.contains(entry.getName())) {
+        logger.fine("Match not found for" + entry.getName());
         continue;
       }
       entry.extractTo(targetDir.resolve(entry.getName()), overwrite);
     }
   }
-
 }
