@@ -21,10 +21,14 @@ import com.google.jenkins.plugins.persistentmaster.storage.Storage;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -155,7 +159,7 @@ public class RestoreProcedure {
     private final boolean overwrite;
 
     private FetchExtractChain(
-        List<String> latestBackupFiles,List<String> existingFileMetadata, Storage storage, Volume volume,
+        List<String> latestBackupFiles, List<String> existingFileMetadata, Storage storage, Volume volume,
         Scope scope, Path tempDirectory, Path jenkinsHome, boolean overwrite) {
       this.latestBackupFiles = latestBackupFiles;
       this.existingFileMetadata = existingFileMetadata;

@@ -15,11 +15,18 @@
  */
 package com.google.jenkins.plugins.persistentmaster.storage;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.*;
-import java.util.logging.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Storage implementation using a Google Cloud Storage (GCS) bucket as storage
@@ -140,7 +147,6 @@ public class GcloudGcsStorage implements Storage {
   @Override
   public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
     logger.fine("Updating existing files meta data.");
-    logger.info("Updating existing files meta data.");
     uploadObjectToGCSS(filenames, EXISTING_FILE_METADATA, EXISTING_FILES_COMMENT_LINE);
   }
 

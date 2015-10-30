@@ -18,11 +18,16 @@ package com.google.jenkins.plugins.persistentmaster.volume.zip;
 import com.google.common.base.Preconditions;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
-import org.apache.commons.compress.archivers.zip.*;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 /**

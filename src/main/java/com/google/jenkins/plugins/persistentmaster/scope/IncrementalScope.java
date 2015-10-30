@@ -15,11 +15,13 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
-import com.google.jenkins.plugins.persistentmaster.volume.*;
+import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeCreator;
+import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.attribute.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 
 

@@ -21,8 +21,9 @@ import com.google.jenkins.plugins.persistentmaster.volume.Volume.Creator;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
-
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 /**
  * A scope implementation that allows filtering out special files that would
  * otherwise be added by the given scope.
