@@ -18,16 +18,11 @@ package com.google.jenkins.plugins.persistentmaster.volume.zip;
 import com.google.common.base.Preconditions;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
-import org.apache.commons.compress.archivers.zip.UnixStat;
-import org.apache.commons.compress.archivers.zip.Zip64Mode;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.logging.Logger;
 
@@ -79,7 +74,6 @@ class ZipCreator implements Volume.Creator {
   private void copySymlink(Path file, String filenameInZip) throws IOException {
     logger.finer("Adding symlink: " + file + " with filename: "
         + filenameInZip);
-    //logger.info("Adding symlink: " + file + " with filename: "   + filenameInZip);
     Path symlinkTarget = Files.readSymbolicLink(file);
     // Unfortunately, there is no API method to create a symlink in a ZIP file,
     // however, a symlink entry can easily be created by hand.
@@ -95,7 +89,6 @@ class ZipCreator implements Volume.Creator {
 
   private void copyDirectory(String filenameInZip) throws IOException {
     logger.finer("Adding directory: " + filenameInZip);
-   // logger.info("Adding directory: " + filenameInZip);
     // entries ending in / indicate a directory
     ZipArchiveEntry entry = new ZipArchiveEntry(filenameInZip + "/");
     // in addition, set the unix directory flag

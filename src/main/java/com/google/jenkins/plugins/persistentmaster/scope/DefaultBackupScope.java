@@ -15,18 +15,16 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 import hudson.Extension;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Defines a {@link Scope} containing all files in JENKINS_HOME, excluding
@@ -34,15 +32,12 @@ import hudson.Extension;
  * e.g. temp directories, workspaces.
  */
 public class DefaultBackupScope extends ConfigurableScope {
-
   // The display name for the descriptor.
   @VisibleForTesting
-  public static final String DISPLAY_NAME =
-      Messages.DefaultBackupScope_DisplayName();
+  public static final String DISPLAY_NAME = Messages.DefaultBackupScope_DisplayName();
 
   @DataBoundConstructor
-  public DefaultBackupScope() {
-  }
+  public DefaultBackupScope() {}
 
   @Override
   public String getScopeName() {
@@ -50,8 +45,8 @@ public class DefaultBackupScope extends ConfigurableScope {
   }
 
   @Override
-  public void addFiles(final Path jenkinsHome, Volume.Creator creator, List<String> existingFileMetadata)
-      throws IOException {
+  public void addFiles(final Path jenkinsHome, Volume.Creator creator,
+      List<String> existingFileMetadata) throws IOException {
     Set<Path> excludedDirs = new HashSet<>();
     // exclude tmp dirs from build slaves
     excludedDirs.add(jenkinsHome.resolve("container-tmp"));
@@ -74,8 +69,8 @@ public class DefaultBackupScope extends ConfigurableScope {
   }
 
   @Override
-  public void extractFiles(Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite, List<String> existingFileMetadata) throws IOException {
+  public void extractFiles(Path jenkinsHome, Volume.Extractor extractor, boolean overwrite,
+      List<String> existingFileMetadata) throws IOException {
     Scopes.extractAllFilesTo(jenkinsHome, extractor, overwrite, existingFileMetadata);
   }
 
@@ -83,9 +78,7 @@ public class DefaultBackupScope extends ConfigurableScope {
    * Descriptor for {@link DefaultBackupScope}.
    */
   @Extension
-  public static class DefaultBackupScopeDescriptor
-      extends ConfigurableScopeDescriptor {
-
+  public static class DefaultBackupScopeDescriptor extends ConfigurableScopeDescriptor {
     @Override
     public String getDisplayName() {
       return DISPLAY_NAME;

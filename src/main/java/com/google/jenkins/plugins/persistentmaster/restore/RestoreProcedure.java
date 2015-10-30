@@ -15,21 +15,18 @@
  */
 package com.google.jenkins.plugins.persistentmaster.restore;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
-
 import com.google.jenkins.plugins.persistentmaster.initiation.InitiationStrategy;
 import com.google.jenkins.plugins.persistentmaster.scope.Scope;
 import com.google.jenkins.plugins.persistentmaster.storage.Storage;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.*;
+
+import javax.annotation.Nullable;
 
 /**
  * The restore procedure restores the jenkins environment from a previous
@@ -216,7 +213,7 @@ public class RestoreProcedure {
 
     private final FetchExtractTask previousTask;
     private final String backupFile;
-    private final List<String> existingFileNames;
+    private final List<String> existingFileMetadata;
     private final Volume volume;
     private final Scope scope;
     private final Storage storage;
@@ -224,12 +221,12 @@ public class RestoreProcedure {
     private final Path tempDirectory;
     private final boolean overwrite;
 
-    public FetchExtractTask(FetchExtractTask previousTask, String backupFile, List<String> existingFileNames,
+    public FetchExtractTask(FetchExtractTask previousTask, String backupFile, List<String> existingFileMetadata,
         Volume volume, Scope scope, Storage storage, Path jenkinsHome,
         Path tempDirectory, boolean overwrite) {
       this.previousTask = previousTask;
       this.backupFile = backupFile;
-      this.existingFileNames = existingFileNames;
+      this.existingFileMetadata = existingFileMetadata;
       this.volume = volume;
       this.scope = scope;
       this.storage = storage;
@@ -263,7 +260,7 @@ public class RestoreProcedure {
 
         logger.fine("Extracting backup volume");
         try (Volume.Extractor extractor = volume.extract(volumePath)) {
-          scope.extractFiles(jenkinsHome, extractor, overwrite, existingFileNames);
+          scope.extractFiles(jenkinsHome, extractor, overwrite, existingFileMetadata);
         }  // auto-close extractor
       } catch (IOException e) {
         completeExceptionally(e);  // causes consecutive tasks to stop

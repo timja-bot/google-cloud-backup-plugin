@@ -15,12 +15,11 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
+import com.google.jenkins.plugins.persistentmaster.volume.Volume.*;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-
-import com.google.jenkins.plugins.persistentmaster.volume.Volume.Creator;
-import com.google.jenkins.plugins.persistentmaster.volume.Volume.Extractor;
 
 /**
  * Forwarding class for {@link Scope}. Allows wrapping an instance of
@@ -34,13 +33,14 @@ public abstract class ForwardingScope implements Scope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileMetadata) throws IOException {
+  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileMetadata)
+      throws IOException {
     scope.addFiles(jenkinsHome, creator, existingFileMetadata);
   }
 
   @Override
-  public void extractFiles(Path jenkinsHome, Extractor extractor,
-      boolean overwrite, List<String> existingFileMetadata) throws IOException {
+  public void extractFiles(Path jenkinsHome, Extractor extractor, boolean overwrite,
+      List<String> existingFileMetadata) throws IOException {
     scope.extractFiles(jenkinsHome, extractor, overwrite, existingFileMetadata);
   }
 }

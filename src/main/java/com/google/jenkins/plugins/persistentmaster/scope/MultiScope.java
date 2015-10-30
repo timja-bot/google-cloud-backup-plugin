@@ -15,18 +15,12 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
+import com.google.jenkins.plugins.persistentmaster.volume.*;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
-
-import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeCreator;
-import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeEntry;
-import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeExtractor;
-import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+import java.util.*;
 
 /**
  * A {@link Scope} implementation that combines multiple other {@link Scope}s
@@ -34,7 +28,6 @@ import com.google.jenkins.plugins.persistentmaster.volume.Volume;
  * Volume.
  */
 public class MultiScope implements Scope {
-
   private final List<SubScope> subScopes = new LinkedList<>();
 
   /**
@@ -53,31 +46,27 @@ public class MultiScope implements Scope {
   public void addFiles(Path jenkinsHome, Volume.Creator creator, List<String> existingFileMetadata)
       throws IOException {
     for (final SubScope subScope : subScopes) {
-      subScope.getScope()
-          .addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
-            @Override
-            public void addFile(
-                Path file, String pathInVolume, BasicFileAttributes attrs)
-                throws IOException {
-              super.addFile(
-                  file, subScope.getVolumePrefix() + pathInVolume, attrs);
-            }
-          }, existingFileMetadata);
+      subScope.getScope().addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
+        @Override
+        public void addFile(Path file, String pathInVolume, BasicFileAttributes attrs)
+            throws IOException {
+          super.addFile(file, subScope.getVolumePrefix() + pathInVolume, attrs);
+        }
+      },
+          existingFileMetadata);
     }
   }
 
   @Override
-  public void extractFiles(final Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite, List<String> existingFileMetadata) throws IOException {
+  public void extractFiles(final Path jenkinsHome, Volume.Extractor extractor, boolean overwrite,
+      List<String> existingFileMetadata) throws IOException {
     for (final SubScope subScope : subScopes) {
-      subScope.getScope()
-          .extractFiles(jenkinsHome, new ForwardingVolumeExtractor(extractor) {
-
-            public Iterator<Volume.Entry> iterator() {
-              return new SubScopeIterator(subScope, super.iterator());
-            }
-
-          }, overwrite, existingFileMetadata);
+      subScope.getScope().extractFiles(jenkinsHome, new ForwardingVolumeExtractor(extractor) {
+        public Iterator<Volume.Entry> iterator() {
+          return new SubScopeIterator(subScope, super.iterator());
+        }
+      },
+          overwrite, existingFileMetadata);
     }
   }
 
@@ -90,7 +79,6 @@ public class MultiScope implements Scope {
    * the given sub scope.
    */
   private static class SubScopeIterator implements Iterator<Volume.Entry> {
-
     private final SubScope subScope;
     private final Iterator<Volume.Entry> extractorIterator;
     private Volume.Entry next = null;
@@ -102,8 +90,7 @@ public class MultiScope implements Scope {
      * @param subScope the sub scope this iterator should handle.
      * @param extractorIterator the actual iterator of the Volume.
      */
-    private SubScopeIterator(
-        SubScope subScope, Iterator<Volume.Entry> extractorIterator) {
+    private SubScopeIterator(SubScope subScope, Iterator<Volume.Entry> extractorIterator) {
       this.subScope = subScope;
       this.extractorIterator = extractorIterator;
     }
@@ -155,7 +142,6 @@ public class MultiScope implements Scope {
    * storing the internal definition of the {@link MultiScope}.
    */
   private static class SubScope {
-
     private final Scope scope;
     private final String volumePrefix;
 
@@ -189,7 +175,5 @@ public class MultiScope implements Scope {
     public String getVolumePrefix() {
       return volumePrefix;
     }
-
   }
-
 }

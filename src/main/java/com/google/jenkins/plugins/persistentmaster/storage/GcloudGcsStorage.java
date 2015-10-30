@@ -15,18 +15,11 @@
  */
 package com.google.jenkins.plugins.persistentmaster.storage;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.nio.file.*;
+import java.util.*;
+import java.util.logging.*;
 
 /**
  * Storage implementation using a Google Cloud Storage (GCS) bucket as storage
@@ -81,14 +74,15 @@ public class GcloudGcsStorage implements Storage {
       // remove gs://bucket/ from the beginning of every filename
       file = file.substring(urlPrefixLength);
       // exclude internal files
-      if (!Objects.equals(file, LAST_BACKUP_FILE) && !Objects.equals(file, EXISTING_FILE_METADATA)) {
+      if (!Objects.equals(file, LAST_BACKUP_FILE)
+          && !Objects.equals(file, EXISTING_FILE_METADATA)) {
         files.add(file);
       }
     }
     return files;
   }
-  
-  
+
+
   @Override
   public List<String> findLatestBackup() {
     List<String> files;
@@ -119,14 +113,15 @@ public class GcloudGcsStorage implements Storage {
     }
     return files;
   }
-  
+
   @Override
   public List<String> listMetadataForExistingFiles() throws IOException {
     List<String> files;
     try {
       files = getObjectFromGCS(EXISTING_FILE_METADATA);
     } catch (IOException e) {
-      logger.log(Level.FINE, "Exception while loading existing file metatdata. Files previously deleted may load", e);
+      logger.log(Level.FINE,
+          "Exception while loading existing file metatdata. Files previously deleted may load", e);
       return null;
     }
     if (files.isEmpty()) {
@@ -134,51 +129,23 @@ public class GcloudGcsStorage implements Storage {
       return null;
     }
     return files;
-    
   }
 
-//  @Override
-//  public List<String> listMetadataForExistingFiles() throws IOException {
-//    List<String> content = null;
-//    List<String> files = new LinkedList<>();
-//    try {
-//      content = gsutil("cat", gsUrlPrefix + EXISTING_FILE_METADATA);
-//    } catch (IOException e) {
-//      logger.log(Level.WARNING, "Exception while loading existing file metatdata. Files previously deleted may load", e);
-//      return files;
-//    }
-//    if (content.isEmpty()) {
-//      logger.fine("Existing is empty. Looks like deleted files may load");
-//      return files;
-//    }
-//    for (String line : content) {
-//      if (!line.trim().isEmpty() && !line.startsWith(COMMENT_PREFIX)) {
-//        files.add(line.trim());
-//      }
-//    }
-//    return files;
-//  }
-
-  
   @Override
   public void updateLastBackup(List<String> filenames) throws IOException {
-      logger.fine("Updating last-backup file.");
-      uploadObjectToGCSS(filenames, LAST_BACKUP_FILE, COMMENT_LINE);
+    logger.fine("Updating last-backup file.");
+    uploadObjectToGCSS(filenames, LAST_BACKUP_FILE, COMMENT_LINE);
   }
-  
-  /* (non-Javadoc)
-   * @see com.google.jenkins.plugins.persistentmaster.storage.Storage#updateExistingFilesMetaData(java.util.List)
-   */
+
   @Override
   public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
     logger.fine("Updating existing files meta data.");
     logger.info("Updating existing files meta data.");
     uploadObjectToGCSS(filenames, EXISTING_FILE_METADATA, EXISTING_FILES_COMMENT_LINE);
-    
   }
-  
 
-  public void uploadObjectToGCSS(List<String> filenames, String name, String comment) throws IOException {
+  public void uploadObjectToGCSS(List<String> filenames, String name, String comment)
+      throws IOException {
     List<String> content = new ArrayList<>(filenames.size() + 1);
     content.add(comment);
     content.addAll(filenames);
@@ -194,26 +161,6 @@ public class GcloudGcsStorage implements Storage {
       Files.deleteIfExists(tempDirectory);
     }
   }
-  
-//
-//  @Override
-//  public void updateLastBackup(List<String> filenames) throws IOException {
-//    logger.fine("Updating last-backup file.");
-//    List<String> content = new ArrayList<>(filenames.size() + 1);
-//    content.add(COMMENT_LINE);
-//    content.addAll(filenames);
-//    final Path tempDirectory = Files.createTempDirectory(TMP_DIR_PREFIX);
-//    final Path tempFilePath = tempDirectory.resolve(LAST_BACKUP_FILE);
-//    logger.fine("Using temp file: " + tempFilePath);
-//    try {
-//      Files.write(tempFilePath, content, StandardCharsets.UTF_8);
-//      gsutil("cp", tempFilePath.toString(), gsUrlPrefix + LAST_BACKUP_FILE);
-//    } finally {
-//      logger.fine("Cleaning up temp file & directory.");
-//      Files.deleteIfExists(tempFilePath);
-//      Files.deleteIfExists(tempDirectory);
-//    }
-//  }
 
   private List<String> gsutil(String... params) throws IOException {
     ProcessBuilder builder = new ProcessBuilder(GSUTIL_CMD);
@@ -279,5 +226,4 @@ public class GcloudGcsStorage implements Storage {
     return "GcloudGcsStorage{"
         + "gsUrlPrefix='" + gsUrlPrefix + '\'' + '}';
   }
-
 }

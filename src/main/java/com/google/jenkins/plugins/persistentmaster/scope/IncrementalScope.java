@@ -15,15 +15,12 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
+import com.google.jenkins.plugins.persistentmaster.volume.*;
+
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.*;
 import java.util.List;
-import java.util.logging.Logger;
-
-import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeCreator;
-import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 
 /**
@@ -35,7 +32,6 @@ import com.google.jenkins.plugins.persistentmaster.volume.Volume;
  * including it in the volume.
  */
 public class IncrementalScope extends ForwardingScope {
-
   private final FileTime lastBackupTime;
 
   /**
@@ -62,6 +58,7 @@ public class IncrementalScope extends ForwardingScope {
           super.addFile(file, pathInVolume, attrs);
         }
       }
-    }, existingFileMetadata);
+    },
+        existingFileMetadata);
   }
 }

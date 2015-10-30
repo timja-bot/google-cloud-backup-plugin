@@ -18,25 +18,18 @@ package com.google.jenkins.plugins.persistentmaster.volume.zip;
 import com.google.common.base.Preconditions;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Enumeration;
-import java.util.Iterator;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
  * Implementation of {@link Volume.Extractor} for ZIP volumes.
  */
 class ZipExtractor implements Volume.Extractor {
-
-  private static final Logger logger =
-      Logger.getLogger(ZipExtractor.class.getName());
+  private static final Logger logger = Logger.getLogger(ZipExtractor.class.getName());
 
   private final ZipFile zipFile;
   private final Path zipPath;
@@ -50,8 +43,7 @@ class ZipExtractor implements Volume.Extractor {
 
   @Override
   public Iterator<Volume.Entry> iterator() {
-    final Enumeration<ZipArchiveEntry> entriesInPhysicalOrder =
-        zipFile.getEntriesInPhysicalOrder();
+    final Enumeration<ZipArchiveEntry> entriesInPhysicalOrder = zipFile.getEntriesInPhysicalOrder();
     return new Iterator<Volume.Entry>() {
       @Override
       public boolean hasNext() {
@@ -64,14 +56,12 @@ class ZipExtractor implements Volume.Extractor {
         Preconditions.checkState(!closed, "Volume closed");
         // nextElement() will throw NoSuchElementException if no next
         // element exists
-        return new ZipVolumeEntry(zipFile,
-            entriesInPhysicalOrder.nextElement());
+        return new ZipVolumeEntry(zipFile, entriesInPhysicalOrder.nextElement());
       }
 
       @Override
       public void remove() {
-        throw new UnsupportedOperationException(
-            "remove is not supported by this iterator");
+        throw new UnsupportedOperationException("remove is not supported by this iterator");
       }
     };
   }
@@ -88,7 +78,6 @@ class ZipExtractor implements Volume.Extractor {
    * Represents an entry in a ZIP volume.
    */
   private static class ZipVolumeEntry implements Volume.Entry {
-
     private final ZipFile zipFile;
     private final ZipArchiveEntry zipArchiveEntry;
 
@@ -119,7 +108,6 @@ class ZipExtractor implements Volume.Extractor {
 
     @Override
     public void extractTo(Path target, boolean overwrite) throws IOException {
-      
       if (!overwrite && Files.exists(target)) {
         logger.finer("Path already exists, skipping extraction: " + target);
         return;
@@ -158,7 +146,5 @@ class ZipExtractor implements Volume.Extractor {
         Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
       }
     }
-
   }
-
 }

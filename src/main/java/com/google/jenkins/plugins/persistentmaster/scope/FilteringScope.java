@@ -15,22 +15,19 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
+import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeCreator;
+import com.google.jenkins.plugins.persistentmaster.volume.Volume.Creator;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeCreator;
-import com.google.jenkins.plugins.persistentmaster.volume.Volume.Creator;
+import java.util.*;
 
 /**
  * A scope implementation that allows filtering out special files that would
  * otherwise be added by the given scope.
  */
 public class FilteringScope extends ForwardingScope {
-
   private final Set<String> exclusions = new HashSet<>();
 
   public FilteringScope(Scope scope) {
@@ -42,16 +39,17 @@ public class FilteringScope extends ForwardingScope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileMetadata) throws IOException {
+  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileMetadata)
+      throws IOException {
     super.addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
       @Override
-      public void addFile(
-          Path file, String pathInVolume, BasicFileAttributes attrs)
+      public void addFile(Path file, String pathInVolume, BasicFileAttributes attrs)
           throws IOException {
         if (!exclusions.contains(pathInVolume)) {
           super.addFile(file, pathInVolume, attrs);
         }
       }
-    }, existingFileMetadata);
+    },
+        existingFileMetadata);
   }
 }

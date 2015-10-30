@@ -18,14 +18,9 @@ package com.google.jenkins.plugins.persistentmaster.scope;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -123,18 +118,13 @@ public final class Scopes {
   public static void extractAllFilesTo(
       Path targetDir, Volume.Extractor extractor, boolean overwrite, List<String> existingFileNames)
       throws IOException {
-    int matchFound = 0, matchUnfound = 0;
-   // logger.info("existing file names" + existingFileNames);
     for (Volume.Entry entry : extractor) {
       if(!existingFileNames.isEmpty() && !existingFileNames.contains(entry.getName())){
         logger.info ("Unfound match for" + entry.getName());
-        matchUnfound ++;
         continue;
       }
-      matchFound ++;
       entry.extractTo(targetDir.resolve(entry.getName()), overwrite);
     }
-    logger.info ("!! Matches found !!!!!" + matchFound + "Unfound matches" + matchUnfound);
   }
 
 }
