@@ -76,7 +76,7 @@ public class RestoreProcedure {
     }
 
     List<String> existingFileMetadata = storage.listMetadataForExistingFiles();
-    logger.info("Listing the existing file names " + existingFileMetadata.size());
+    logger.fine("Listing the existing file names " + existingFileMetadata.size());
     List<String> latestBackupFiles = storage.findLatestBackup();
     
     if (latestBackupFiles == null || latestBackupFiles.isEmpty()) {

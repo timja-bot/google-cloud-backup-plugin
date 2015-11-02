@@ -120,7 +120,7 @@ public final class Scopes {
     boolean isExistingFileMetadata = !existingFileMetadata.isEmpty();
     for (Volume.Entry entry : extractor) {
       if (isExistingFileMetadata && !existingFileMetadata.contains(entry.getName())) {
-        logger.fine("Match not found for" + entry.getName());
+        logger.fine("Match not found for: " + entry.getName());
         continue;
       }
       entry.extractTo(targetDir.resolve(entry.getName()), overwrite);
