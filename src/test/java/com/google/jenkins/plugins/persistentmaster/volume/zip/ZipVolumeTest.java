@@ -48,6 +48,10 @@ import java.util.logging.Logger;
  */
 public class ZipVolumeTest {
   private static final Logger logger = Logger.getLogger(ZipVolumeTest.class.getName());
+  private static final String NEW_FILE_ZIPPED_CONTENT  = "newFile new content";
+  private static final String NEW_FILE_CHANGED_CONTENT  = "newFile changed content";
+  private static final String EXISTING_FILE_ZIPPED_CONTENT  = "existingFile new content";
+  private static final String EXISTING_FILE_CHANGED_CONTENT  = "existingFile changed content";
 
   private Path tempDirectory;
   private Path nonEmptyDir;
@@ -79,7 +83,7 @@ public class ZipVolumeTest {
     // invalid symlink in the fashion jenkins creates them
     Files.createSymbolicLink(invalidSymlink, Paths.get("-1"));
     existingFile = tempDirectory.resolve("existingFile");
-    Files.write(existingFile, Collections.singleton("existingFile new content"),
+    Files.write(existingFile, Collections.singleton(EXISTING_FILE_ZIPPED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     newFile = tempDirectory.resolve("newFile");
     Files.write(newFile, Collections.singleton("newFile new content"), StandardCharsets.UTF_8,
@@ -159,7 +163,7 @@ public class ZipVolumeTest {
     Files.createDirectory(extractPath);
     // create pre-existing file
     Path extractedExistingFile = extractPath.resolve("existingFile");
-    Files.write(extractedExistingFile, Collections.singleton("existingFile old content"),
+    Files.write(extractedExistingFile, Collections.singleton(EXISTING_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
       Scopes.extractAllFilesTo(extractPath, extractor, true, existingFilesMap);
@@ -170,7 +174,7 @@ public class ZipVolumeTest {
     List<String> existingFileText =
         Files.readAllLines(extractedExistingFile, StandardCharsets.UTF_8);
     assertEquals(1, existingFileText.size());
-    assertEquals("existingFile new content", existingFileText.get(0));
+    assertEquals(EXISTING_FILE_ZIPPED_CONTENT, existingFileText.get(0));
   }
   
   
@@ -202,7 +206,7 @@ public class ZipVolumeTest {
     List<String> existingFileText =
         Files.readAllLines(extractedExistingFile, StandardCharsets.UTF_8);
     assertEquals(1, existingFileText.size());
-    assertEquals("existingFile new content", existingFileText.get(0));
+    assertEquals(EXISTING_FILE_ZIPPED_CONTENT, existingFileText.get(0));
   }
 
   
@@ -225,7 +229,7 @@ public class ZipVolumeTest {
     // create pre-existing file
     Path extractedExistingFile = extractPath.resolve("existingFile");
     Path extractedNewFile = extractPath.resolve("newFile");
-    Files.write(extractedExistingFile, Collections.singleton("existingFile old content"),
+    Files.write(extractedExistingFile, Collections.singleton(EXISTING_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
       Scopes.extractAllFilesTo(extractPath, extractor, false, existingFilesMap);
@@ -239,8 +243,8 @@ public class ZipVolumeTest {
     List<String> newFileText = Files.readAllLines(extractedNewFile, StandardCharsets.UTF_8);
     assertEquals(1, existingFileText.size());
     assertEquals(1, newFileText.size());
-    assertEquals("existingFile old content", existingFileText.get(0));
-    assertEquals("newFile new content", newFileText.get(0));
+    assertEquals(EXISTING_FILE_CHANGED_CONTENT, existingFileText.get(0));
+    assertEquals(NEW_FILE_ZIPPED_CONTENT, newFileText.get(0));
   }
 
   @Test
@@ -262,7 +266,7 @@ public class ZipVolumeTest {
     // create pre-existing file
     Path extractedExistingFile = extractPath.resolve("existingFile");
     Path extractedNewFile = extractPath.resolve("newFile");
-    Files.write(extractedExistingFile, Collections.singleton("existingFile old content"),
+    Files.write(extractedExistingFile, Collections.singleton(EXISTING_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
       Scopes.extractAllFilesTo(extractPath, extractor, false, existingFilesMap);
@@ -270,10 +274,10 @@ public class ZipVolumeTest {
 
     // check that the map is updated. Manipulate the content of this file
     assertTrue(existingFilesMap.get("newFile"));
-    Files.write(extractedNewFile, Collections.singleton("This should be overwritten"),
+    Files.write(extractedNewFile, Collections.singleton(NEW_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.WRITE);
     List<String> newFileText = Files.readAllLines(extractedNewFile, StandardCharsets.UTF_8);
-    assertEquals("This should be overwritten", newFileText.get(0));
+    assertEquals(NEW_FILE_CHANGED_CONTENT, newFileText.get(0));
 
     // New file should be overwritten because it was restored from backup
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
@@ -288,8 +292,8 @@ public class ZipVolumeTest {
     newFileText = Files.readAllLines(extractedNewFile, StandardCharsets.UTF_8);
     assertEquals(1, existingFileText.size());
     assertEquals(1, newFileText.size());
-    assertEquals("existingFile old content", existingFileText.get(0));
-    assertEquals("newFile new content", newFileText.get(0));
+    assertEquals(EXISTING_FILE_CHANGED_CONTENT, existingFileText.get(0));
+    assertEquals(NEW_FILE_ZIPPED_CONTENT, newFileText.get(0));
   }
   
   @Test
@@ -306,7 +310,7 @@ public class ZipVolumeTest {
     Files.createDirectory(extractPath);
     // create pre-existing file
     Path extractedExistingFile = extractPath.resolve("existingFile");
-    Files.write(extractedExistingFile, Collections.singleton("existingFile old content"),
+    Files.write(extractedExistingFile, Collections.singleton(EXISTING_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
       Scopes.extractAllFilesTo(extractPath, extractor, false, new HashMap<String,Boolean>());
@@ -317,7 +321,7 @@ public class ZipVolumeTest {
     List<String> existingFileText =
         Files.readAllLines(extractedExistingFile, StandardCharsets.UTF_8);
     assertEquals(1, existingFileText.size());
-    assertEquals("existingFile old content", existingFileText.get(0));
+    assertEquals(EXISTING_FILE_CHANGED_CONTENT, existingFileText.get(0));
   }
 
   private static void deleteDirectory(Path dir) throws IOException {
