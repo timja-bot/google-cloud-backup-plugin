@@ -171,11 +171,10 @@ public interface Volume {
      * Extract the contents of this entry to the given target path.
      *
      * @param target the target path, where the contents should be extracted.
-     * @param overwrite whether the operation should overwrite existing files
      * when a conflict is detected.
      * @throws IOException if some file operation fails.
      */
-    public void extractTo(Path target, boolean overwrite) throws IOException;
+    public void extractTo(Path target) throws IOException;
 
   }
 

@@ -112,11 +112,7 @@ class ZipExtractor implements Volume.Extractor {
     }
 
     @Override
-    public void extractTo(Path target, boolean overwrite) throws IOException {
-      if (!overwrite && Files.exists(target)) {
-        logger.finer("Path already exists, skipping extraction: " + target);
-        return;
-      }
+    public void extractTo(Path target) throws IOException {
       if (isDirectory()) {
         extractDirectory(target);
       } else {

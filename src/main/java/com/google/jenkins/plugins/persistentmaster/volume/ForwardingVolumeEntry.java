@@ -52,8 +52,8 @@ public abstract class ForwardingVolumeEntry implements Volume.Entry {
   }
   
   @Override
-  public void extractTo(Path target, boolean overwrite) throws IOException {
-    entry.extractTo(target, overwrite);
+  public void extractTo(Path target) throws IOException {
+    entry.extractTo(target);
   }
 
 }

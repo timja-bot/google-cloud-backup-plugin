@@ -129,9 +129,12 @@ public final class Scopes {
         // path does not exist, so we are restoring from some backup
         existingFileMetadataMap.put(entry.getName(), true);
       }
-      Boolean isRestoredFromBackup = existingFileMetadataMap.get(entry.getName());
 
-      entry.extractTo(path, isRestoredFromBackup == null ? overwrite : isRestoredFromBackup);
+      Boolean isRestoredFromBackup = existingFileMetadataMap.get(entry.getName());
+      if (overwrite || (isRestoredFromBackup != null && isRestoredFromBackup)) {
+        entry.extractTo(path);
+      }
+
     }
   }
 }

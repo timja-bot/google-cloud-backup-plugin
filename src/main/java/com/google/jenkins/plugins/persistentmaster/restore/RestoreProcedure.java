@@ -23,7 +23,6 @@ import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -78,12 +78,9 @@ public class RestoreProcedure {
     }
 
     List<String> existingFileMetadata = storage.listMetadataForExistingFiles();
-    Map<String, Boolean> existingFileMetadataMap = new HashMap<>();
-    for (String file : existingFileMetadata) {
-      existingFileMetadataMap.put(file, null);
-    }
+    Map<String, Boolean> existingFileMetadataMap = existingFileMetadata.stream()
+                                                   .collect(Collectors.toMap(o -> o, o -> false));
 
-    // Map<String, Boolean> a = existingFileMetadata.stream().collect(Collectors.toMap(
 
     logger.fine("Listing the existing file names " + existingFileMetadata.size());
     List<String> latestBackupFiles = storage.findLatestBackup();
@@ -92,8 +89,7 @@ public class RestoreProcedure {
       logger.warning("No backup files found, initializing new environment");
       initiationStrategy.initializeNewEnvironment(jenkinsHome);
     } else {
-      String finalBackupFile = latestBackupFiles.get(
-          latestBackupFiles.size() - 1);
+      String finalBackupFile = latestBackupFiles.get(latestBackupFiles.size() - 1);
       logger.info("Restoring from backup files up to: " + finalBackupFile);
       if (scratchDir != null) {
         // This is a no-op if the scratch directory already exists.
