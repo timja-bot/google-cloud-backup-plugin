@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Tests for {@link MultiScope}.
@@ -125,7 +126,7 @@ public class MultiScopeTest {
     ArgumentCaptor<Volume.Extractor> volumeExtractorCaptor =
         ArgumentCaptor.forClass(Volume.Extractor.class);
     verify(scope1).extractFiles(
-        same(jenkinsHome), volumeExtractorCaptor.capture(), eq(false), any(List.class));
+        same(jenkinsHome), volumeExtractorCaptor.capture(), eq(false), any(Map.class));
     assertNotSame(extractor, volumeExtractorCaptor.getValue());
     Iterator<Entry> entries = volumeExtractorCaptor.getValue().iterator();
     assertTrue(entries.hasNext());
@@ -135,7 +136,7 @@ public class MultiScopeTest {
     // scope2
     volumeExtractorCaptor = ArgumentCaptor.forClass(Volume.Extractor.class);
     verify(scope2).extractFiles(
-        same(jenkinsHome), volumeExtractorCaptor.capture(), eq(false), any(List.class));
+        same(jenkinsHome), volumeExtractorCaptor.capture(), eq(false), any(Map.class));
     assertNotSame(extractor, volumeExtractorCaptor.getValue());
     entries = volumeExtractorCaptor.getValue().iterator();
     assertTrue(entries.hasNext());

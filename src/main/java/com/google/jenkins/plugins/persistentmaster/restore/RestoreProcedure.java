@@ -23,8 +23,10 @@ import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.logging.Level;
@@ -76,6 +78,13 @@ public class RestoreProcedure {
     }
 
     List<String> existingFileMetadata = storage.listMetadataForExistingFiles();
+    Map<String, Boolean> existingFileMetadataMap = new HashMap<>();
+    for (String file : existingFileMetadata) {
+      existingFileMetadataMap.put(file, null);
+    }
+
+    // Map<String, Boolean> a = existingFileMetadata.stream().collect(Collectors.toMap(
+
     logger.fine("Listing the existing file names " + existingFileMetadata.size());
     List<String> latestBackupFiles = storage.findLatestBackup();
     
@@ -95,7 +104,7 @@ public class RestoreProcedure {
           : Files.createTempDirectory(scratchDir, TMP_DIR_PREFIX);
       logger.fine("Using temp directory: " + tempDirectory);
       try {
-        parallelFetchAndExtract(latestBackupFiles, existingFileMetadata, tempDirectory);
+        parallelFetchAndExtract(latestBackupFiles, existingFileMetadataMap, tempDirectory);
       } finally {
         // cleanup after ourselves
         try {
@@ -113,7 +122,7 @@ public class RestoreProcedure {
     logger.fine("Finished environment setup for jenkins");
   }
 
-  private void parallelFetchAndExtract(List<String> latestBackupFiles,List<String> existingFileMetadata,
+  private void parallelFetchAndExtract(List<String> latestBackupFiles, Map<String, Boolean> existingFileMetadataMap,
       Path tempDirectory) throws IOException {
    
    
@@ -122,7 +131,7 @@ public class RestoreProcedure {
     // once per VM, creating a shared pool is really not necessary.
     ForkJoinPool forkJoinPool = new ForkJoinPool();
     try {
-      forkJoinPool.invoke(new FetchExtractChain(latestBackupFiles, existingFileMetadata, storage,
+      forkJoinPool.invoke(new FetchExtractChain(latestBackupFiles, existingFileMetadataMap, storage,
           volume, scope, tempDirectory, jenkinsHome, overwrite));
     } catch (RuntimeException e) {
       // fork join pool wraps original exception in RuntimeException(s)
@@ -150,7 +159,7 @@ public class RestoreProcedure {
   private static class FetchExtractChain extends ForkJoinTask<Void> {
 
     private final List<String> latestBackupFiles;
-    private final List<String> existingFileMetadata;
+    private final Map<String, Boolean> existingFileMetadataMap;
     private final Storage storage;
     private final Volume volume;
     private final Scope scope;
@@ -159,10 +168,11 @@ public class RestoreProcedure {
     private final boolean overwrite;
 
     private FetchExtractChain(
-        List<String> latestBackupFiles, List<String> existingFileMetadata, Storage storage, Volume volume,
+List<String> latestBackupFiles,
+        Map<String, Boolean> existingFileMetadataMap, Storage storage, Volume volume,
         Scope scope, Path tempDirectory, Path jenkinsHome, boolean overwrite) {
       this.latestBackupFiles = latestBackupFiles;
-      this.existingFileMetadata = existingFileMetadata;
+      this.existingFileMetadataMap = existingFileMetadataMap;
       this.storage = storage;
       this.volume = volume;
       this.scope = scope;
@@ -187,7 +197,7 @@ public class RestoreProcedure {
       for (Iterator<String> it = latestBackupFiles.iterator(); it.hasNext(); ) {
         String file = it.next();
         FetchExtractTask fetchExtractTask = new FetchExtractTask(previousTask,
-            file,  existingFileMetadata, volume, scope, storage, jenkinsHome, tempDirectory,
+            file, existingFileMetadataMap, volume, scope, storage, jenkinsHome, tempDirectory,
             overwrite);
         if (it.hasNext()) {
           fetchExtractTask.fork();
@@ -217,7 +227,7 @@ public class RestoreProcedure {
 
     private final FetchExtractTask previousTask;
     private final String backupFile;
-    private final List<String> existingFileMetadata;
+    private final Map<String,Boolean> existingFileMetadata;
     private final Volume volume;
     private final Scope scope;
     private final Storage storage;
@@ -225,7 +235,7 @@ public class RestoreProcedure {
     private final Path tempDirectory;
     private final boolean overwrite;
 
-    public FetchExtractTask(FetchExtractTask previousTask, String backupFile, List<String> existingFileMetadata,
+    public FetchExtractTask(FetchExtractTask previousTask, String backupFile, Map<String, Boolean> existingFileMetadata,
         Volume volume, Scope scope, Storage storage, Path jenkinsHome,
         Path tempDirectory, boolean overwrite) {
       this.previousTask = previousTask;

@@ -35,9 +35,10 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 
@@ -96,8 +97,14 @@ public class ZipVolumeTest {
   public void testCreateAndExtractZipArchive() throws Exception {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
-    List<String> existingFiles = Arrays.asList("nonEmptyDir", "emptyDir", "fileInRoot",
-        "nonEmptyDir/fileInDir", "validSymlink", "invalidSymlink");
+    Map<String, Boolean> existingFilesMap = new HashMap<>();
+    existingFilesMap.put("nonEmptyDir", null);
+    existingFilesMap.put("emptyDir", null);
+    existingFilesMap.put("fileInRoot", null);
+    existingFilesMap.put("nonEmptyDir/fileInDir", null);
+    existingFilesMap.put("validSymlink", null);
+    existingFilesMap.put("invalidSymlink", null);
+
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
       creator.addFile(nonEmptyDir, "nonEmptyDir", null);
       creator.addFile(emptyDir, "emptyDir", null);
@@ -116,7 +123,7 @@ public class ZipVolumeTest {
     Path extractPath = tempDirectory.resolve("extracted");
     Files.createDirectory(extractPath);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
-      Scopes.extractAllFilesTo(extractPath, extractor, true, existingFiles);
+      Scopes.extractAllFilesTo(extractPath, extractor, true, existingFilesMap);
     } // auto-close extractor
 
     // verify
@@ -139,7 +146,9 @@ public class ZipVolumeTest {
   public void testCreateAndExtractZipArchiveWithConflict() throws Exception {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
-    List<String> existingFiles = Arrays.asList("existingFile", "newFile");
+    Map<String, Boolean> existingFilesMap = new HashMap<>();
+    existingFilesMap.put("existingFile", null);
+    existingFilesMap.put("newFile", null);
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
       creator.addFile(existingFile, "existingFile", null);
       creator.addFile(newFile, "newFile", null);
@@ -155,7 +164,7 @@ public class ZipVolumeTest {
     Files.write(extractedExistingFile, Collections.singleton("existingFile old content"),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
-      Scopes.extractAllFilesTo(extractPath, extractor, false, existingFiles);
+      Scopes.extractAllFilesTo(extractPath, extractor, false, existingFilesMap);
     } // auto-close extractor
 
     // verify

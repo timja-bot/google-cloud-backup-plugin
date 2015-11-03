@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -114,16 +115,23 @@ public final class Scopes {
    * @throws IOException if some file operation fails.
    */
   public static void extractAllFilesTo(Path targetDir, Volume.Extractor extractor,
-      boolean overwrite, List<String> existingFileMetadata) throws IOException {
+      boolean overwrite, Map<String, Boolean> existingFileMetadataMap) throws IOException {
     // If this is empty, there could be a bug during backup - but we should not block the rest of
     // the restoration. We have already logged this earlier, so just move on
-    boolean isExistingFileMetadata = !existingFileMetadata.isEmpty();
+    boolean isExistingFileMetadata = !existingFileMetadataMap.isEmpty();
     for (Volume.Entry entry : extractor) {
-      if (isExistingFileMetadata && !existingFileMetadata.contains(entry.getName())) {
+      if (isExistingFileMetadata && !existingFileMetadataMap.containsKey(entry.getName())) {
         logger.fine("Match not found for: " + entry.getName());
         continue;
       }
-      entry.extractTo(targetDir.resolve(entry.getName()), overwrite);
+      Path path = targetDir.resolve(entry.getName());
+      if (!Files.exists(path)) {
+        // path does not exist, so we are restoring from some backup
+        existingFileMetadataMap.put(entry.getName(), true);
+      }
+      Boolean isRestoredFromBackup = existingFileMetadataMap.get(entry.getName());
+
+      entry.extractTo(path, isRestoredFromBackup == null ? overwrite : isRestoredFromBackup);
     }
   }
 }

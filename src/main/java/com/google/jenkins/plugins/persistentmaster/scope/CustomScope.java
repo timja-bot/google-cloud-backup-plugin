@@ -15,22 +15,23 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+
+import hudson.Extension;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.jenkins.plugins.persistentmaster.volume.Volume;
-import hudson.Extension;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-
-import jenkins.model.Jenkins;
 
 /**
  * Defines a user-configured {@link Scope}.
@@ -86,9 +87,10 @@ public class CustomScope extends ConfigurableScope {
 
   @Override
   public void extractFiles(Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite, List<String> existingFileMetadata) throws IOException {
+boolean overwrite,
+      Map<String, Boolean> existingFileMetadataMap) throws IOException {
     Scopes.extractAllFilesTo(jenkinsHome.resolve(filepath), extractor,
-        overwrite, existingFileMetadata);
+overwrite, existingFileMetadataMap);
   }
 
   /**

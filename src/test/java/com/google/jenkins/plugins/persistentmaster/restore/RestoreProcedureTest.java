@@ -15,13 +15,6 @@
  */
 package com.google.jenkins.plugins.persistentmaster.restore;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
@@ -30,6 +23,12 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import com.google.jenkins.plugins.persistentmaster.initiation.InitiationStrategy;
+import com.google.jenkins.plugins.persistentmaster.scope.Scope;
+import com.google.jenkins.plugins.persistentmaster.storage.Storage;
+import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,10 +39,13 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.google.jenkins.plugins.persistentmaster.initiation.InitiationStrategy;
-import com.google.jenkins.plugins.persistentmaster.scope.Scope;
-import com.google.jenkins.plugins.persistentmaster.storage.Storage;
-import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * Tests for {@link RestoreProcedure}.
@@ -100,7 +102,7 @@ public class RestoreProcedureTest {
     verify(storage).loadFile(eq(latestBackup), volumePathCaptor.capture());
     verify(volume).extract(eq(volumePathCaptor.getValue()));
     verify(scope).extractFiles(eq(jenkinsHome), same(volumeExtractor),
-        eq(false), any(List.class));
+        eq(false), any(Map.class));
     verify(initiationStrategy).initializeRestoredEnvironment(eq(jenkinsHome),
         eq(latestBackup));
     verify(storage).listMetadataForExistingFiles();
@@ -139,7 +141,7 @@ public class RestoreProcedureTest {
       backupOrder.verify(storage).loadFile(eq(backup), volumePath.capture());
       backupOrder.verify(volume).extract(eq(volumePath.getValue()));
       backupOrder.verify(scope).extractFiles(
-          eq(jenkinsHome), same(volumeExtractor), eq(false), any(List.class));
+          eq(jenkinsHome), same(volumeExtractor), eq(false), any(Map.class));
       pathCaptorList.add(volumePath);
     }
 

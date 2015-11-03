@@ -15,11 +15,12 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
+import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-
-import com.google.jenkins.plugins.persistentmaster.volume.Volume;
+import java.util.Map;
 
 /**
  * A Scope defines a set of files to add to a {@link Volume} and provides
@@ -50,5 +51,5 @@ public interface Scope {
    * @throws IOException if some file operation fails.
    */
   public void extractFiles(Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite, List<String> existingFileMetadata) throws IOException;
+      boolean overwrite, Map<String,Boolean> existingFileMetadata) throws IOException;
 }

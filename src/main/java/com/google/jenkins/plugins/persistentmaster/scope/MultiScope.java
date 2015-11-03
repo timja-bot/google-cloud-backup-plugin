@@ -15,12 +15,19 @@
  */
 package com.google.jenkins.plugins.persistentmaster.scope;
 
-import com.google.jenkins.plugins.persistentmaster.volume.*;
+import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeCreator;
+import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeEntry;
+import com.google.jenkins.plugins.persistentmaster.volume.ForwardingVolumeExtractor;
+import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * A {@link Scope} implementation that combines multiple other {@link Scope}s
@@ -59,14 +66,14 @@ public class MultiScope implements Scope {
 
   @Override
   public void extractFiles(final Path jenkinsHome, Volume.Extractor extractor, boolean overwrite,
-      List<String> existingFileMetadata) throws IOException {
+      Map<String, Boolean> existingFileMetadataMap) throws IOException {
     for (final SubScope subScope : subScopes) {
       subScope.getScope().extractFiles(jenkinsHome, new ForwardingVolumeExtractor(extractor) {
         public Iterator<Volume.Entry> iterator() {
           return new SubScopeIterator(subScope, super.iterator());
         }
       },
-          overwrite, existingFileMetadata);
+          overwrite, existingFileMetadataMap);
     }
   }
 
