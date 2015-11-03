@@ -73,7 +73,7 @@ public class CustomScope extends ConfigurableScope {
   }
 
   @Override
-  public void addFiles(final Path jenkinsHome, Volume.Creator creator, List<String> existingFileMetadata)
+  public void addFiles(final Path jenkinsHome, Volume.Creator creator, Set<String> existingFileMetadata)
       throws IOException {
     Set<Path> excludedDirs = new HashSet<>();
     Path basePath = jenkinsHome.resolve(filepath);
@@ -86,11 +86,9 @@ public class CustomScope extends ConfigurableScope {
   }
 
   @Override
-  public void extractFiles(Path jenkinsHome, Volume.Extractor extractor,
-boolean overwrite,
+  public void extractFiles(Path jenkinsHome, Volume.Extractor extractor, boolean overwrite, 
       Map<String, Boolean> existingFileMetadataMap) throws IOException {
-    Scopes.extractAllFilesTo(jenkinsHome.resolve(filepath), extractor,
-overwrite, existingFileMetadataMap);
+    Scopes.extractAllFilesTo(jenkinsHome.resolve(filepath), extractor, overwrite, existingFileMetadataMap);
   }
 
   /**

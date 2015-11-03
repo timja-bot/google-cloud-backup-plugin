@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 /**
  * A scope implementation that allows filtering out special files that would
@@ -40,7 +39,7 @@ public class FilteringScope extends ForwardingScope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileMetadata)
+  public void addFiles(Path jenkinsHome, Creator creator, Set<String> existingFileMetadata)
       throws IOException {
     super.addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
       @Override

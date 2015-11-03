@@ -19,8 +19,8 @@ import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A Scope defines a set of files to add to a {@link Volume} and provides
@@ -36,7 +36,7 @@ public interface Scope {
    * should be added to.
    * @throws IOException if some file operation fails.
    */
-  public void addFiles(Path jenkinsHome, Volume.Creator creator, List<String> existingFileNames)
+  public void addFiles(Path jenkinsHome, Volume.Creator creator, Set<String> existingFileNames)
       throws IOException;
 
   /**
@@ -51,5 +51,5 @@ public interface Scope {
    * @throws IOException if some file operation fails.
    */
   public void extractFiles(Path jenkinsHome, Volume.Extractor extractor,
-      boolean overwrite, Map<String,Boolean> existingFileMetadata) throws IOException;
+      boolean overwrite, Map<String,Boolean> existingFileMetadataMap) throws IOException;
 }

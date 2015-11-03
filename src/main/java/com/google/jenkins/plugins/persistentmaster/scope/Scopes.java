@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -52,7 +51,7 @@ public final class Scopes {
    * @throws IOException if some file operation fails.
    */
   public static void addAllFilesIn(final Path basePath, final Volume.Creator creator,
-      final Set<Path> excludedDirs, final List<String> existingFileMetadata) throws IOException {
+      final Set<Path> excludedDirs, final Set<String> existingFileMetadata) throws IOException {
     Files.walkFileTree(basePath, new SimpleFileVisitor<Path>() {
       @Override
       public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)

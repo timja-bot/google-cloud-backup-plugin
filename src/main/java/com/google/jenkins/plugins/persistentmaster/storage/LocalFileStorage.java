@@ -15,6 +15,9 @@
  */
 package com.google.jenkins.plugins.persistentmaster.storage;
 
+import com.google.api.client.util.Lists;
+import com.google.common.base.Objects;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
@@ -24,8 +27,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.google.common.base.Objects;
+import java.util.Set;
 
 /**
  * Simple storage implementation using a directory in the local filesystem as
@@ -114,8 +116,8 @@ public class LocalFileStorage implements Storage {
   }
   
   @Override
-  public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
-    updateObject(filenames, EXISTING_FILE_METADATA , EXISTING_FILES_COMMENT_LINE);
+  public void updateExistingFilesMetaData(Set<String> filenames) throws IOException {
+    updateObject(Lists.newArrayList(filenames), EXISTING_FILE_METADATA , EXISTING_FILES_COMMENT_LINE);
     
   }
   

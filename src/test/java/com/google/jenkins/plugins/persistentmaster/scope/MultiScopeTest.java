@@ -39,11 +39,11 @@ import org.mockito.stubbing.Answer;
 
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Tests for {@link MultiScope}.
@@ -87,12 +87,12 @@ public class MultiScopeTest {
 
   @Test
   public void testAddFiles_prefixAdded() throws Exception {
-    multiScope.addFiles(jenkinsHome, creator, new ArrayList<String>());
+    multiScope.addFiles(jenkinsHome, creator, new HashSet<String>());
 
     // scope1
     ArgumentCaptor<Volume.Creator> volumeCreatorCaptor =
         ArgumentCaptor.forClass(Volume.Creator.class);
-    verify(scope1).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture(), any(List.class));
+    verify(scope1).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture(), any(Set.class));
     assertNotSame(creator, volumeCreatorCaptor.getValue());
     volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope1", null);
     verify(creator).addFile(
@@ -100,7 +100,7 @@ public class MultiScopeTest {
 
     // scope2
     volumeCreatorCaptor = ArgumentCaptor.forClass(Volume.Creator.class);
-    verify(scope2).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture(), any(List.class));
+    verify(scope2).addFiles(same(jenkinsHome), volumeCreatorCaptor.capture(), any(Set.class));
     assertNotSame(creator, volumeCreatorCaptor.getValue());
     volumeCreatorCaptor.getValue().addFile(jenkinsHome, "fileOfScope2", null);
     verify(creator).addFile(

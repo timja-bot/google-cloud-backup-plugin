@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -50,7 +50,7 @@ public class IncrementalScope extends ForwardingScope {
 
   @Override
   public void addFiles(Path jenkinsHome, Volume.Creator creator,
-      final List<String> existingFileMetadata) throws IOException {
+      final Set<String> existingFileMetadata) throws IOException {
     super.addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
       @Override
       public void addFile(Path file, String pathInVolume, BasicFileAttributes attrs)

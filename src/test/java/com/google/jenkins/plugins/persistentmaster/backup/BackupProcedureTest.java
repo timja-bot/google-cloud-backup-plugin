@@ -38,7 +38,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Tests for {@link BackupProcedure}.
@@ -83,14 +83,14 @@ public class BackupProcedureTest {
     verify(volume).getFileExtension();
     ArgumentCaptor<Path> backupVolumePathCaptor = ArgumentCaptor.forClass(Path.class);
     verify(volume).createNew(backupVolumePathCaptor.capture());
-    verify(scope).addFiles(same(jenkinsHome), same(volumeCreator), any(List.class));
+    verify(scope).addFiles(same(jenkinsHome), same(volumeCreator), any(Set.class));
     ArgumentCaptor<String> backupVolumeNameCapture = ArgumentCaptor.forClass(String.class);
     verify(storage).storeFile(
         same(backupVolumePathCaptor.getValue()), backupVolumeNameCapture.capture());
     verify(storage).updateLastBackup(eq(Arrays.asList(backupVolumeNameCapture.getValue())));
     verify(backupHistory)
         .processHistoricBackups(same(storage), eq(backupVolumeNameCapture.getValue()));
-    verify(storage).updateExistingFilesMetaData(any(List.class));
+    verify(storage).updateExistingFilesMetaData(any(Set.class));
     verifyNoMoreInteractions(volume, scope, storage, backupHistory);
     assertTrue(backupVolumeNameCapture.getValue().endsWith(".test"));
     assertTrue(backupTime.isBeforeNow());

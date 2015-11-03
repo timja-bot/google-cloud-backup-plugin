@@ -18,6 +18,7 @@ package com.google.jenkins.plugins.persistentmaster.storage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Specifies a storage provider for storing and retrieving backups volumes.
@@ -90,6 +91,6 @@ public interface Storage {
    * @param filenames the filenames of all the files currently in the volume.
    * @throws IOException if updating the filename of the latest backup fails.
    */
-  public void updateExistingFilesMetaData(List<String> filenames) throws IOException;
+  public void updateExistingFilesMetaData(Set<String> filenames) throws IOException;
 
 }

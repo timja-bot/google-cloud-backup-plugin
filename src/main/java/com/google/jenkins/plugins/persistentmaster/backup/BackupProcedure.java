@@ -27,9 +27,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,7 +110,7 @@ public class BackupProcedure {
     try {
       logger.fine("Creating backup volume");
       int fileCount;
-      List<String> existingFileNames = new ArrayList<>();
+      Set<String> existingFileNames = new HashSet<>();
       try (Volume.Creator creator = volume.createNew(volumePath)) {
         scope.addFiles(jenkinsHome, creator, existingFileNames);
         fileCount = creator.getFileCount();

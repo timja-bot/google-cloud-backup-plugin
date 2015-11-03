@@ -25,7 +25,6 @@ import hudson.Extension;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,7 +48,7 @@ public class DefaultBackupScope extends ConfigurableScope {
 
   @Override
   public void addFiles(final Path jenkinsHome, Volume.Creator creator,
-      List<String> existingFileMetadata) throws IOException {
+      Set<String> existingFileMetadata) throws IOException {
     Set<Path> excludedDirs = new HashSet<>();
     // exclude tmp dirs from build slaves
     excludedDirs.add(jenkinsHome.resolve("container-tmp"));
@@ -73,8 +72,8 @@ public class DefaultBackupScope extends ConfigurableScope {
 
   @Override
   public void extractFiles(Path jenkinsHome, Volume.Extractor extractor, boolean overwrite,
-      Map<String, Boolean> existingFileMetadata) throws IOException {
-    Scopes.extractAllFilesTo(jenkinsHome, extractor, overwrite, existingFileMetadata);
+      Map<String, Boolean> existingFileMetadataMap) throws IOException {
+    Scopes.extractAllFilesTo(jenkinsHome, extractor, overwrite, existingFileMetadataMap);
   }
 
   /**

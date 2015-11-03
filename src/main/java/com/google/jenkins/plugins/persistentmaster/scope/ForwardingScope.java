@@ -20,8 +20,8 @@ import com.google.jenkins.plugins.persistentmaster.volume.Volume.Extractor;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Forwarding class for {@link Scope}. Allows wrapping an instance of
@@ -35,7 +35,7 @@ public abstract class ForwardingScope implements Scope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Creator creator, List<String> existingFileMetadata)
+  public void addFiles(Path jenkinsHome, Creator creator, Set<String> existingFileMetadata)
       throws IOException {
     scope.addFiles(jenkinsHome, creator, existingFileMetadata);
   }

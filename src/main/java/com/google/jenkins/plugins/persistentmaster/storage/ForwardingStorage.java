@@ -18,6 +18,7 @@ package com.google.jenkins.plugins.persistentmaster.storage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Forwarding class for {@link Storage}. Allows to wrap an instance of
@@ -52,7 +53,7 @@ public abstract class ForwardingStorage implements Storage {
   }
 
   @Override
-  public void updateExistingFilesMetaData(List<String> filenames) throws IOException {
+  public void updateExistingFilesMetaData(Set<String> filenames) throws IOException {
    storage.updateExistingFilesMetaData(filenames);
   }
   

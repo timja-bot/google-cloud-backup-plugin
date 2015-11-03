@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * A {@link Scope} implementation that combines multiple other {@link Scope}s
@@ -50,7 +51,7 @@ public class MultiScope implements Scope {
   }
 
   @Override
-  public void addFiles(Path jenkinsHome, Volume.Creator creator, List<String> existingFileMetadata)
+  public void addFiles(Path jenkinsHome, Volume.Creator creator, Set<String> existingFileMetadata)
       throws IOException {
     for (final SubScope subScope : subScopes) {
       subScope.getScope().addFiles(jenkinsHome, new ForwardingVolumeCreator(creator) {
