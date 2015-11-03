@@ -144,7 +144,7 @@ public class ZipVolumeTest {
 
 
   @Test
-  public void testOverwrite() throws Exception {
+  public void testOverwriteSet() throws Exception {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
@@ -250,7 +250,7 @@ public class ZipVolumeTest {
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
       creator.addFile(existingFile, "existingFile", null);
       creator.addFile(newFile, "newFile", null);
-    } // auto-close creator
+    } 
     assertTrue(Files.exists(volumePath));
 
     // extract
@@ -291,7 +291,34 @@ public class ZipVolumeTest {
     assertEquals("existingFile old content", existingFileText.get(0));
     assertEquals("newFile new content", newFileText.get(0));
   }
+  
+  @Test
+  public void testExistingFileMetadataIsEmpty() throws Exception {
+    // create
+    Path volumePath = tempDirectory.resolve("test.zip");
+    try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
+      creator.addFile(existingFile, "existingFile", null);
+    } // auto-close creator
+    assertTrue(Files.exists(volumePath));
 
+    // extract
+    Path extractPath = tempDirectory.resolve("extracted");
+    Files.createDirectory(extractPath);
+    // create pre-existing file
+    Path extractedExistingFile = extractPath.resolve("existingFile");
+    Files.write(extractedExistingFile, Collections.singleton("existingFile old content"),
+        StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
+    try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
+      Scopes.extractAllFilesTo(extractPath, extractor, false, new HashMap<String,Boolean>());
+    } // auto-close extractor
+
+    // verify
+    assertTrue(Files.exists(extractedExistingFile));
+    List<String> existingFileText =
+        Files.readAllLines(extractedExistingFile, StandardCharsets.UTF_8);
+    assertEquals(1, existingFileText.size());
+    assertEquals("existingFile old content", existingFileText.get(0));
+  }
 
   private static void deleteDirectory(Path dir) throws IOException {
     Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {

@@ -77,13 +77,12 @@ public class RestoreProcedure {
       return;
     }
 
-    List<String> existingFileMetadata = storage.listMetadataForExistingFiles();
     Map<String, Boolean> existingFileMetadataMap = new HashMap<>();
-    for (String file : existingFileMetadata) {
-      existingFileMetadataMap.put(file, false);
+    for (String filename : storage.listMetadataForExistingFiles()) {
+      existingFileMetadataMap.put(filename, false);
     }
 
-    logger.fine("Listing the existing file names " + existingFileMetadata.size());
+    logger.fine("Listing the existing file names " + existingFileMetadataMap.size());
     List<String> latestBackupFiles = storage.findLatestBackup();
     
     if (latestBackupFiles == null || latestBackupFiles.isEmpty()) {
