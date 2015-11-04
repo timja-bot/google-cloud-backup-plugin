@@ -132,11 +132,11 @@ public class GcloudGcsStorage implements Storage {
     } catch (IOException e) {
       logger.log(Level.FINE,
           "Exception while loading existing file metatdata. Files previously deleted may load", e);
-      return null;
+      return new ArrayList<>();
     }
     if (files.isEmpty()) {
-      logger.fine("Either this is brand new, or existing files meta data backup is corrupted");
-      return null;
+      logger.warning("No files listed in existing files meta data. Either this is brand new or there was an issue in backup");
+      return files;
     }
     return files;
   }

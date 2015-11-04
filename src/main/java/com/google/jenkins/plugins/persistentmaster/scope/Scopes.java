@@ -124,13 +124,13 @@ public final class Scopes {
         continue;
       }
       Path path = targetDir.resolve(entry.getName());
-      if (!Files.exists(path)) {
-        // path does not exist, so we are restoring from some backup
+      if (overwrite || !Files.exists(path)) {
+        //Either we are overwriting or path does not exist, so going forward we will always restore from backup
         existingFileMetadataMap.put(entry.getName(), true);
       }
 
-      Boolean isRestoredFromBackup = existingFileMetadataMap.get(entry.getName());
-      if (overwrite || (isRestoredFromBackup != null && isRestoredFromBackup)) {
+      Boolean shouldRestoreFromBackup = existingFileMetadataMap.get(entry.getName());
+      if (shouldRestoreFromBackup != null && shouldRestoreFromBackup) {
         entry.extractTo(path);
       }
 
