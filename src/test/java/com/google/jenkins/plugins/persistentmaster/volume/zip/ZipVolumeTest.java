@@ -52,6 +52,8 @@ public class ZipVolumeTest {
   private static final String NEW_FILE_CHANGED_CONTENT  = "newFile changed content";
   private static final String EXISTING_FILE_ZIPPED_CONTENT  = "existingFile new content";
   private static final String EXISTING_FILE_CHANGED_CONTENT  = "existingFile changed content";
+  private static final String NEW_FILE  = "newFile";
+  private static final String EXISTING_FILE  = "existingFile";
 
   private Path tempDirectory;
   private Path nonEmptyDir;
@@ -82,11 +84,11 @@ public class ZipVolumeTest {
     invalidSymlink = tempDirectory.resolve("invalidSymlink");
     // invalid symlink in the fashion jenkins creates them
     Files.createSymbolicLink(invalidSymlink, Paths.get("-1"));
-    existingFile = tempDirectory.resolve("existingFile");
+    existingFile = tempDirectory.resolve(EXISTING_FILE);
     Files.write(existingFile, Collections.singleton(EXISTING_FILE_ZIPPED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
-    newFile = tempDirectory.resolve("newFile");
-    Files.write(newFile, Collections.singleton("newFile new content"), StandardCharsets.UTF_8,
+    newFile = tempDirectory.resolve(NEW_FILE);
+    Files.write(newFile, Collections.singleton(NEW_FILE_ZIPPED_CONTENT), StandardCharsets.UTF_8,
         StandardOpenOption.CREATE_NEW);
     zipVolume = new ZipVolume();
   }
@@ -152,17 +154,17 @@ public class ZipVolumeTest {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
-      creator.addFile(existingFile, "existingFile", null);
+      creator.addFile(existingFile, EXISTING_FILE, null);
     } // auto-close creator
     assertTrue(Files.exists(volumePath));
 
     // extract
     Map<String, Boolean> existingFilesMap = new HashMap<>();
-    existingFilesMap.put("existingFile", false);
+    existingFilesMap.put(EXISTING_FILE, false);
     Path extractPath = tempDirectory.resolve("extracted");
     Files.createDirectory(extractPath);
     // create pre-existing file
-    Path extractedExistingFile = extractPath.resolve("existingFile");
+    Path extractedExistingFile = extractPath.resolve(EXISTING_FILE);
     Files.write(extractedExistingFile, Collections.singleton(EXISTING_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
@@ -184,18 +186,18 @@ public class ZipVolumeTest {
     Path volumePath = tempDirectory.resolve("test.zip");
     // Add new file and existing file to the backup
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
-      creator.addFile(existingFile, "existingFile", null);
-      creator.addFile(newFile, "newFile", null);
+      creator.addFile(existingFile, EXISTING_FILE, null);
+      creator.addFile(newFile, NEW_FILE, null);
     } // auto-close creator
     assertTrue(Files.exists(volumePath));
 
     // extract
     //Add only existing file to the map. This means new file was deleted at some point
     Map<String, Boolean> existingFilesMap = new HashMap<>();
-    existingFilesMap.put("existingFile", false);
+    existingFilesMap.put(EXISTING_FILE, false);
     Path extractPath = tempDirectory.resolve("extracted");
-    Path extractedExistingFile = extractPath.resolve("existingFile");
-    Path extractedNewFile = extractPath.resolve("newFile");
+    Path extractedExistingFile = extractPath.resolve(EXISTING_FILE);
+    Path extractedNewFile = extractPath.resolve(NEW_FILE);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
       Scopes.extractAllFilesTo(extractPath, extractor, true, existingFilesMap);
     } // auto-close extractor
@@ -215,20 +217,20 @@ public class ZipVolumeTest {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
-      creator.addFile(existingFile, "existingFile", null);
-      creator.addFile(newFile, "newFile", null);
+      creator.addFile(existingFile, EXISTING_FILE, null);
+      creator.addFile(newFile, NEW_FILE, null);
     } // auto-close creator
     assertTrue(Files.exists(volumePath));
 
     // extract
     Map<String, Boolean> existingFilesMap = new HashMap<>();
-    existingFilesMap.put("existingFile", false);
-    existingFilesMap.put("newFile", false);
+    existingFilesMap.put(EXISTING_FILE, false);
+    existingFilesMap.put(NEW_FILE, false);
     Path extractPath = tempDirectory.resolve("extracted");
     Files.createDirectory(extractPath);
     // create pre-existing file
-    Path extractedExistingFile = extractPath.resolve("existingFile");
-    Path extractedNewFile = extractPath.resolve("newFile");
+    Path extractedExistingFile = extractPath.resolve(EXISTING_FILE);
+    Path extractedNewFile = extractPath.resolve(NEW_FILE);
     Files.write(extractedExistingFile, Collections.singleton(EXISTING_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
@@ -252,20 +254,20 @@ public class ZipVolumeTest {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
-      creator.addFile(existingFile, "existingFile", null);
-      creator.addFile(newFile, "newFile", null);
+      creator.addFile(existingFile, EXISTING_FILE, null);
+      creator.addFile(newFile, NEW_FILE, null);
     } 
     assertTrue(Files.exists(volumePath));
 
     // extract
     Map<String, Boolean> existingFilesMap = new HashMap<>();
-    existingFilesMap.put("existingFile", null);
-    existingFilesMap.put("newFile", null);
+    existingFilesMap.put(EXISTING_FILE, null);
+    existingFilesMap.put(NEW_FILE, null);
     Path extractPath = tempDirectory.resolve("extracted");
     Files.createDirectory(extractPath);
     // create pre-existing file
-    Path extractedExistingFile = extractPath.resolve("existingFile");
-    Path extractedNewFile = extractPath.resolve("newFile");
+    Path extractedExistingFile = extractPath.resolve(EXISTING_FILE);
+    Path extractedNewFile = extractPath.resolve(NEW_FILE);
     Files.write(extractedExistingFile, Collections.singleton(EXISTING_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
@@ -273,7 +275,7 @@ public class ZipVolumeTest {
     } // auto-close extractor
 
     // check that the map is updated. Manipulate the content of this file
-    assertTrue(existingFilesMap.get("newFile"));
+    assertTrue(existingFilesMap.get(NEW_FILE));
     Files.write(extractedNewFile, Collections.singleton(NEW_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.WRITE);
     List<String> newFileText = Files.readAllLines(extractedNewFile, StandardCharsets.UTF_8);
@@ -301,7 +303,7 @@ public class ZipVolumeTest {
     // create
     Path volumePath = tempDirectory.resolve("test.zip");
     try (Volume.Creator creator = zipVolume.createNew(volumePath)) {
-      creator.addFile(existingFile, "existingFile", null);
+      creator.addFile(existingFile, EXISTING_FILE, null);
     } // auto-close creator
     assertTrue(Files.exists(volumePath));
 
@@ -309,7 +311,7 @@ public class ZipVolumeTest {
     Path extractPath = tempDirectory.resolve("extracted");
     Files.createDirectory(extractPath);
     // create pre-existing file
-    Path extractedExistingFile = extractPath.resolve("existingFile");
+    Path extractedExistingFile = extractPath.resolve(EXISTING_FILE);
     Files.write(extractedExistingFile, Collections.singleton(EXISTING_FILE_CHANGED_CONTENT),
         StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
     try (Volume.Extractor extractor = zipVolume.extract(volumePath)) {
