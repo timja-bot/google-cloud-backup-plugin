@@ -82,7 +82,7 @@ public class RestoreProcedure {
       existingFileMetadataMap.put(filename, false);
     }
 
-    logger.fine("Listing the existing file names size: " + existingFileMetadataMap.size());
+    logger.fine("Number of files in the existing files metadata is: " + existingFileMetadataMap.size());
     List<String> latestBackupFiles = storage.findLatestBackup();
     
     if (latestBackupFiles == null || latestBackupFiles.isEmpty()) {
