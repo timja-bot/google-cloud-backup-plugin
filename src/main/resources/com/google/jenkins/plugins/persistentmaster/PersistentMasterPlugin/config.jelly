@@ -11,7 +11,7 @@
     </f:entry>
     <f:entry title="${%Overwrite local data on restore}"
              help="/plugin/google-persistent-master-backup-plugin/help-restoreOverwritesData.html">
-      <f:checkbox name="restoreOverwritesData" field="restoreOverwritesData" checked="{it.restoreOverwritesData}" />
+      <f:checkbox name="restoreOverwritesData" field="restoreOverwritesData" checked="${it.restoreOverwritesData}" />
     </f:entry>
     <f:entry title="${%Full backup interval in hours}"
              help="/plugin/google-persistent-master-backup-plugin/help-fullBackupIntervalHours.html">
