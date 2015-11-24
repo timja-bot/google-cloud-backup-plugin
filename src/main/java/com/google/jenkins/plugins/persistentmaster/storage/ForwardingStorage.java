@@ -72,5 +72,14 @@ public abstract class ForwardingStorage implements Storage {
     return storage.listMetadataForExistingFiles();
   }
 
+  @Override
+  public String getVersionInfo() {
+   return storage.getVersionInfo();
+  }
+
+  @Override
+  public void updateVersionInfo(String version) throws IOException {
+    storage.updateVersionInfo(version);
+  }
 
 }

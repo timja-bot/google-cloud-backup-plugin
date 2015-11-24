@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -42,14 +43,18 @@ public class GcloudGcsStorage implements Storage {
   private static final Logger logger = Logger.getLogger(GcloudGcsStorage.class.getName());
 
   private static final String LAST_BACKUP_FILE = "last-backup";
+  private static final String VERSION = "jenkins_upgrade_version";
   private static final String EXISTING_FILE_METADATA = "existing-files-metadata";
   private static final String COMMENT_PREFIX = "#";
   private static final String COMMENT_LINE =
       COMMENT_PREFIX + " This file contains the filename of the last backup.";
   private static final String EXISTING_FILES_COMMENT_LINE =
       COMMENT_PREFIX + " This file contains the existing files meta data.";
+  private static final String VERSION_COMMENT_LINE =
+      COMMENT_PREFIX + " This file contains the upgrade version for the jenkins instance.";
   private static final String GSUTIL_CMD = "gsutil";
   private static final String TMP_DIR_PREFIX = "persistent-master-backup-plugin";
+
 
   private final String gsUrlPrefix;
 
@@ -85,7 +90,7 @@ public class GcloudGcsStorage implements Storage {
       file = file.substring(urlPrefixLength);
       // exclude internal files
       if (!Objects.equals(file, LAST_BACKUP_FILE)
-          && !Objects.equals(file, EXISTING_FILE_METADATA)) {
+          && !Objects.equals(file, EXISTING_FILE_METADATA) && !Objects.equals(file, VERSION)) {
         files.add(file);
       }
     }
@@ -109,21 +114,6 @@ public class GcloudGcsStorage implements Storage {
     return files;
   }
 
-  private List<String> getObjectFromGCS(String name) throws IOException {
-    List<String> content = null;
-    List<String> files = new LinkedList<>();
-    content = gsutil("cat", gsUrlPrefix + name);
-    if (content.isEmpty()) {
-      return files;
-    }
-    for (String line : content) {
-      if (!line.trim().isEmpty() && !line.startsWith(COMMENT_PREFIX)) {
-        files.add(line.trim());
-      }
-    }
-    return files;
-  }
-
   @Override
   public List<String> listMetadataForExistingFiles() throws IOException {
     List<String> files;
@@ -142,6 +132,40 @@ public class GcloudGcsStorage implements Storage {
   }
 
   @Override
+  public String getVersionInfo() {
+    List<String> files;
+    try {
+      files = getObjectFromGCS(VERSION);
+    } catch (IOException e) {
+      logger.log(Level.FINE,
+          "Exception while loading version info", e);
+      return null;
+    }
+    if (files.isEmpty()) {
+      logger.warning("No files listed in version number. Either this is brand new or there was an issue in backup");
+      return null;
+    }
+    return files.get(0);
+  }
+
+
+  
+  private List<String> getObjectFromGCS(String name) throws IOException {
+    List<String> content = null;
+    List<String> files = new LinkedList<>();
+    content = gsutil("cat", gsUrlPrefix + name);
+    if (content.isEmpty()) {
+      return files;
+    }
+    for (String line : content) {
+      if (!line.trim().isEmpty() && !line.startsWith(COMMENT_PREFIX)) {
+        files.add(line.trim());
+      }
+    }
+    return files;
+  }
+  
+  @Override
   public void updateLastBackup(List<String> filenames) throws IOException {
     logger.fine("Updating last-backup file.");
     uploadObjectToGCSS(filenames, LAST_BACKUP_FILE, COMMENT_LINE);
@@ -151,6 +175,15 @@ public class GcloudGcsStorage implements Storage {
   public void updateExistingFilesMetaData(Set<String> filenames) throws IOException {
     logger.fine("Updating existing files meta data.");
     uploadObjectToGCSS(Lists.newArrayList(filenames), EXISTING_FILE_METADATA, EXISTING_FILES_COMMENT_LINE);
+  }
+  
+  @Override
+  public void updateVersionInfo(String version) throws IOException {
+    logger.fine("Updating version information");
+    if(version == null){
+      return;
+    }
+    uploadObjectToGCSS(Arrays.asList(version), VERSION, VERSION_COMMENT_LINE);
   }
 
   public void uploadObjectToGCSS(List<String> filenames, String name, String comment)

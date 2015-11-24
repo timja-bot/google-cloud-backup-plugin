@@ -21,6 +21,7 @@ import com.google.jenkins.plugins.persistentmaster.storage.Storage;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -46,6 +47,8 @@ public class RestoreProcedure {
 
   private static final String TMP_DIR_PREFIX
       = "persistent-master-restore-tmp";
+  private static final String VERSION_FILE = "jenkins_upgrade_version";
+  private static final String COMMENT_PREFIX = "#";
 
   private final Volume volume;
   private final Scope scope;
@@ -77,11 +80,21 @@ public class RestoreProcedure {
       return;
     }
 
+    // Get versions from storage and version on the file system
+     String storageVersion = storage.getVersionInfo();
+     String fileSystemVersion = getFileSystemVersion();
+     
+    // If version on file system is the same as what is in the backup, then this is NOT an upgrade
+    // and we should restore latest changes from backup. Otherwise honor the overwrite flag.
     Map<String, Boolean> existingFileMetadataMap = new HashMap<>();
     for (String filename : storage.listMetadataForExistingFiles()) {
-      existingFileMetadataMap.put(filename, false);
+      if (fileSystemVersion!= null && fileSystemVersion.equals(storageVersion)) {
+        existingFileMetadataMap.put(filename, true);
+      } else {
+        existingFileMetadataMap.put(filename, false);
+      }
     }
-
+    
     logger.fine("Number of files in the existing files metadata is: " + existingFileMetadataMap.size());
     List<String> latestBackupFiles = storage.findLatestBackup();
     
@@ -117,6 +130,23 @@ public class RestoreProcedure {
           finalBackupFile);
     }
     logger.fine("Finished environment setup for jenkins");
+  }
+
+
+  private String getFileSystemVersion() {
+    try {
+      List<String> lines =
+          Files.readAllLines(jenkinsHome.resolve(VERSION_FILE), StandardCharsets.UTF_8);
+      for (String line : lines) {
+        if (line != null && !line.trim().isEmpty()&& !line.startsWith(COMMENT_PREFIX)) {
+         return line;
+        }
+      }
+      return null;
+    } catch (IOException e) {
+      logger.fine("Exception trying to read filesystem version");
+      return null;
+    }
   }
 
   private void parallelFetchAndExtract(List<String> latestBackupFiles, Map<String, Boolean> existingFileMetadataMap,

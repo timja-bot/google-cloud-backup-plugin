@@ -24,11 +24,13 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,6 +51,8 @@ public class BackupProcedure {
 
   private static final String TMP_DIR_PREFIX
       = "persistent-master-backup-plugin";
+  private static final String VERSION_FILE = "jenkins_upgrade_version";
+  private static final String COMMENT_PREFIX = "#";
 
   private final Volume volume;
   private final Scope scope;
@@ -119,6 +123,10 @@ public class BackupProcedure {
       logger.info("Updating all existing files : Size " + existingFileNames.size());
       storage.updateExistingFilesMetaData(existingFileNames);
       
+      String version = getVersion();
+      logger.info("The current version is: " + version);
+      storage.updateVersionInfo(getVersion());
+      
       if (fileCount > 0) {
         logger.fine("Storing backup volume");
         storage.storeFile(volumePath, backupVolumeName);
@@ -145,6 +153,24 @@ public class BackupProcedure {
     }
     logger.fine("Finished creating backup");
     return backupTime;
+  }
+
+  private String getVersion() {
+    Path versionPath = jenkinsHome.resolve(VERSION_FILE);
+    String version = null;
+    try {
+      if (Files.exists(versionPath)) {
+        List<String> lines = Files.readAllLines(versionPath, StandardCharsets.UTF_8);
+        for (String line : lines) {
+          if (line != null && !line.trim().isEmpty() && !line.startsWith(COMMENT_PREFIX)) {
+            version = line;
+          }
+        }
+      }
+      return version;
+    } catch (IOException e) {
+        return null;
+    }
   }
 
   private static String calculateBackupName(DateTime backupTime) {

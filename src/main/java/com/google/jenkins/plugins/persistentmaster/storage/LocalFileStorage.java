@@ -163,5 +163,23 @@ public class LocalFileStorage implements Storage {
         '}';
   }
 
+  /* (non-Javadoc)
+   * @see com.google.jenkins.plugins.persistentmaster.storage.Storage#getVersionInfo()
+   */
+  @Override
+  public String getVersionInfo() {
+    // TODO(ckerur): Auto-generated method stub
+    return null;
+  }
+
+  /* (non-Javadoc)
+   * @see com.google.jenkins.plugins.persistentmaster.storage.Storage#updateVersionInfo(java.lang.String)
+   */
+  @Override
+  public void updateVersionInfo(String version) throws IOException {
+    // TODO(ckerur): Auto-generated method stub
+    
+  }
+
 
 }

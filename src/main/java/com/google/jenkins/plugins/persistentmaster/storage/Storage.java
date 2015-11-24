@@ -78,6 +78,11 @@ public interface Storage {
   public List<String> listMetadataForExistingFiles() throws IOException;
   
   /**
+   * @return the upgrade version of the Jenkins instance running
+   */
+  String getVersionInfo();
+
+  /**
    * Updates the filename of the latest backup stored in the storage.
    *
    * @param filenames the filenames of the latest backup stored in the storage.
@@ -92,5 +97,12 @@ public interface Storage {
    * @throws IOException if updating the filename of the latest backup fails.
    */
   public void updateExistingFilesMetaData(Set<String> filenames) throws IOException;
+
+  /**
+   * @param version
+   * @throws IOException
+   */
+  void updateVersionInfo(String version) throws IOException;
+
 
 }
