@@ -179,7 +179,7 @@ public class GcloudGcsStorage implements Storage {
   
   @Override
   public void updateVersionInfo(String version) throws IOException {
-    logger.fine("Updating version information");
+    logger.fine("Updating version information: version " + version);
     if(version == null){
       return;
     }

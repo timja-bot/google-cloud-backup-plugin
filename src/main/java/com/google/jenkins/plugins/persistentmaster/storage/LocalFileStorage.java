@@ -17,6 +17,7 @@ package com.google.jenkins.plugins.persistentmaster.storage;
 
 import com.google.api.client.util.Lists;
 import com.google.common.base.Objects;
+import com.google.jenkins.plugins.persistentmaster.VersionUtility;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -92,6 +93,12 @@ public class LocalFileStorage implements Storage {
     return listDataFromStorage(LAST_BACKUP_FILE);
   }
   
+  @Override
+  public String getVersionInfo() {
+    return VersionUtility.getFileSystemVersion(storageDir);
+    
+  }
+  
   private List<String> listDataFromStorage(String name) throws IOException {
     Path path = storageDir.resolve(name);
     if (Files.exists(path)) {
@@ -110,6 +117,8 @@ public class LocalFileStorage implements Storage {
   }
  
 
+  
+
   @Override
   public void updateLastBackup(List<String> filenames) throws IOException {
     updateObject(filenames, LAST_BACKUP_FILE, COMMENT_LINE);
@@ -118,6 +127,12 @@ public class LocalFileStorage implements Storage {
   @Override
   public void updateExistingFilesMetaData(Set<String> filenames) throws IOException {
     updateObject(Lists.newArrayList(filenames), EXISTING_FILE_METADATA , EXISTING_FILES_COMMENT_LINE);
+    
+  }
+  
+  @Override
+  public void updateVersionInfo(String version) throws IOException {
+    VersionUtility.updateFileSystemVersion(storageDir, version);
     
   }
   
@@ -163,23 +178,8 @@ public class LocalFileStorage implements Storage {
         '}';
   }
 
-  /* (non-Javadoc)
-   * @see com.google.jenkins.plugins.persistentmaster.storage.Storage#getVersionInfo()
-   */
-  @Override
-  public String getVersionInfo() {
-    // TODO(ckerur): Auto-generated method stub
-    return null;
-  }
+ 
 
-  /* (non-Javadoc)
-   * @see com.google.jenkins.plugins.persistentmaster.storage.Storage#updateVersionInfo(java.lang.String)
-   */
-  @Override
-  public void updateVersionInfo(String version) throws IOException {
-    // TODO(ckerur): Auto-generated method stub
-    
-  }
-
+ 
 
 }

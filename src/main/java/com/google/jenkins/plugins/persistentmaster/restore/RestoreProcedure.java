@@ -47,8 +47,6 @@ public class RestoreProcedure {
 
   private static final String TMP_DIR_PREFIX
       = "persistent-master-restore-tmp";
-  private static final String VERSION_FILE = "jenkins_upgrade_version";
-  private static final String COMMENT_PREFIX = "#";
 
   private final Volume volume;
   private final Scope scope;
