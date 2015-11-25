@@ -28,7 +28,6 @@ import com.google.jenkins.plugins.persistentmaster.initiation.InitiationStrategy
 import com.google.jenkins.plugins.persistentmaster.scope.Scope;
 import com.google.jenkins.plugins.persistentmaster.storage.Storage;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
-import com.google.jenkins.plugins.persistentmaster.volume.zip.ZipVolumeTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -41,13 +40,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -71,12 +66,6 @@ public class RestoreProcedureTest {
   @Before
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
-    Path tempDirectory = Files.createTempDirectory(ZipVolumeTest.class.getSimpleName());
-    Path file = tempDirectory.resolve("fileInRoot");
-    Files.write(file, Collections.singleton("3"), StandardCharsets.UTF_8,
-        StandardOpenOption.CREATE_NEW);
-    when(jenkinsHome.resolve(any(String.class))).thenReturn(file);
-    
     restoreProcedure = new RestoreProcedure(
         volume, scope, storage, initiationStrategy, jenkinsHome, null, false);
   }

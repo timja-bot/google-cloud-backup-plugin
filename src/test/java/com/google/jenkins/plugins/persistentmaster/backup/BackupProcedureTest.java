@@ -27,7 +27,6 @@ import com.google.jenkins.plugins.persistentmaster.history.BackupHistory;
 import com.google.jenkins.plugins.persistentmaster.scope.Scope;
 import com.google.jenkins.plugins.persistentmaster.storage.Storage;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
-import com.google.jenkins.plugins.persistentmaster.volume.zip.ZipVolumeTest;
 
 import org.joda.time.DateTime;
 import org.junit.After;
@@ -37,12 +36,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -70,11 +65,6 @@ public class BackupProcedureTest {
   @Before
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
-    Path tempDirectory = Files.createTempDirectory(ZipVolumeTest.class.getSimpleName());
-    Path file = tempDirectory.resolve("fileInRoot");
-    Files.write(file, Collections.singleton("3"), StandardCharsets.UTF_8,
-        StandardOpenOption.CREATE_NEW);
-    when(jenkinsHome.resolve(any(String.class))).thenReturn(file);
   }
 
   @After
