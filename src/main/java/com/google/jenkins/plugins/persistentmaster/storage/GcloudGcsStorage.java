@@ -16,6 +16,7 @@
 package com.google.jenkins.plugins.persistentmaster.storage;
 
 import com.google.api.client.util.Lists;
+import com.google.jenkins.plugins.persistentmaster.VersionUtility;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,15 +44,12 @@ public class GcloudGcsStorage implements Storage {
   private static final Logger logger = Logger.getLogger(GcloudGcsStorage.class.getName());
 
   private static final String LAST_BACKUP_FILE = "last-backup";
-  private static final String VERSION = "jenkins_upgrade_version";
   private static final String EXISTING_FILE_METADATA = "existing-files-metadata";
   private static final String COMMENT_PREFIX = "#";
   private static final String COMMENT_LINE =
       COMMENT_PREFIX + " This file contains the filename of the last backup.";
   private static final String EXISTING_FILES_COMMENT_LINE =
       COMMENT_PREFIX + " This file contains the existing files meta data.";
-  private static final String VERSION_COMMENT_LINE =
-      COMMENT_PREFIX + " This file contains the upgrade version for the jenkins instance.";
   private static final String GSUTIL_CMD = "gsutil";
   private static final String TMP_DIR_PREFIX = "persistent-master-backup-plugin";
 
@@ -90,7 +88,7 @@ public class GcloudGcsStorage implements Storage {
       file = file.substring(urlPrefixLength);
       // exclude internal files
       if (!Objects.equals(file, LAST_BACKUP_FILE)
-          && !Objects.equals(file, EXISTING_FILE_METADATA) && !Objects.equals(file, VERSION)) {
+          && !Objects.equals(file, EXISTING_FILE_METADATA) && !Objects.equals(file, VersionUtility.VERSION_FILE)) {
         files.add(file);
       }
     }
@@ -125,7 +123,7 @@ public class GcloudGcsStorage implements Storage {
       return new ArrayList<>();
     }
     if (files.isEmpty()) {
-      logger.warning("No files listed in existing files meta data. Either this is brand new or there was an issue in backup");
+      logger.warning("No files listed in existing files meta data. Either this is brand new or there was an issue in backup.");
       return files;
     }
     return files;
@@ -135,14 +133,14 @@ public class GcloudGcsStorage implements Storage {
   public String getVersionInfo() {
     List<String> files;
     try {
-      files = getObjectFromGCS(VERSION);
+      files = getObjectFromGCS(VersionUtility.VERSION_FILE);
     } catch (IOException e) {
       logger.log(Level.FINE,
           "Exception while loading version info", e);
       return null;
     }
     if (files.isEmpty()) {
-      logger.warning("No files listed in version number. Either this is brand new or there was an issue in backup");
+      logger.warning("No files listed in version number. Either this is brand new or there was an issue in backup.");
       return null;
     }
     return files.get(0);
@@ -179,11 +177,11 @@ public class GcloudGcsStorage implements Storage {
   
   @Override
   public void updateVersionInfo(String version) throws IOException {
-    logger.fine("Updating version information: version " + version);
     if(version == null){
       return;
     }
-    uploadObjectToGCSS(Arrays.asList(version), VERSION, VERSION_COMMENT_LINE);
+    logger.fine("Updating version information: version " + version);
+    uploadObjectToGCSS(Arrays.asList(version), VersionUtility.VERSION_FILE, VersionUtility.COMMENT_LINE);
   }
 
   public void uploadObjectToGCSS(List<String> filenames, String name, String comment)

@@ -121,7 +121,6 @@ public class BackupProcedure {
       storage.updateExistingFilesMetaData(existingFileNames);
       
       String version = VersionUtility.getFileSystemVersion(jenkinsHome);
-      logger.info("The current version is: " + version);
       storage.updateVersionInfo(version);
       
       if (fileCount > 0) {

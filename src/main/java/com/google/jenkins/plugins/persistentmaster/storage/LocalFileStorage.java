@@ -96,7 +96,6 @@ public class LocalFileStorage implements Storage {
   @Override
   public String getVersionInfo() {
     return VersionUtility.getFileSystemVersion(storageDir);
-    
   }
   
   private List<String> listDataFromStorage(String name) throws IOException {
@@ -115,9 +114,6 @@ public class LocalFileStorage implements Storage {
     }
     return null; 
   }
- 
-
-  
 
   @Override
   public void updateLastBackup(List<String> filenames) throws IOException {
@@ -133,7 +129,6 @@ public class LocalFileStorage implements Storage {
   @Override
   public void updateVersionInfo(String version) throws IOException {
     VersionUtility.updateFileSystemVersion(storageDir, version);
-    
   }
   
   public void updateObject(List<String> filenames, String name, String comment) throws IOException {

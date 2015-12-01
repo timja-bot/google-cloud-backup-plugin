@@ -15,6 +15,7 @@
  */
 package com.google.jenkins.plugins.persistentmaster.restore;
 
+import com.google.jenkins.plugins.persistentmaster.VersionComparator;
 import com.google.jenkins.plugins.persistentmaster.VersionUtility;
 import com.google.jenkins.plugins.persistentmaster.initiation.InitiationStrategy;
 import com.google.jenkins.plugins.persistentmaster.scope.Scope;
@@ -81,9 +82,8 @@ public class RestoreProcedure {
     // Get versions from storage and version on the file system
      String storageVersion = storage.getVersionInfo();
      String fileSystemVersion = VersionUtility.getFileSystemVersion(jenkinsHome);
-     logger.info("The current jenkins upgrade version on file is: " + fileSystemVersion);
      
-    // If version on file system is the same as what is in the backup, then this is NOT an upgrade
+    // If version on file system is the same or less than what is in the backup, then this is NOT an upgrade
     // and we should restore latest changes from backup. Otherwise honor the overwrite flag.
     Map<String, Boolean> restoreFromBackupMap =
         buildRestoreFromBackupMap(storageVersion, fileSystemVersion);
@@ -126,21 +126,21 @@ public class RestoreProcedure {
   }
 
   /**
-   * @param storageVersion
-   * @param fileSystemVersion
-   * @return restoreFromBackupMap
+   * @param storageVersion is the jenkins upgrade version in storage
+   * @param fileSystemVersion is the jenkins upgrade version on the disk
+   * @return restoreFromBackupMap map that decides whether we should restore from backup    
    * @throws IOException
    */
   private Map<String, Boolean> buildRestoreFromBackupMap(
       String storageVersion, String fileSystemVersion) throws IOException {
     Map<String, Boolean> restoreFromBackupMap = new HashMap<>();
-    Boolean isUpgrade = (fileSystemVersion!= null) && (!fileSystemVersion.equals(storageVersion));
+    logger.info("FileSystem version is: " + fileSystemVersion + " and backup version is: " + storageVersion);
+    VersionComparator comparator =  VersionComparator.get();
+    int compare = comparator.compare(fileSystemVersion, storageVersion);
+    //considered an upgrade only if file system version exists and is greater than storage version
+    boolean isUpgrade = compare == 1;
     for (String filename : storage.listMetadataForExistingFiles()) {
-      if(isUpgrade) {
-        restoreFromBackupMap.put(filename, false);
-      } else {
-        restoreFromBackupMap.put(filename, true);
-      }
+        restoreFromBackupMap.put(filename, !isUpgrade);
     }
     return restoreFromBackupMap;
   }
@@ -191,10 +191,9 @@ public class RestoreProcedure {
     private final Path jenkinsHome;
     private final boolean overwrite;
 
-    private FetchExtractChain(
-List<String> latestBackupFiles,
-        Map<String, Boolean> restoreFromBackupMap, Storage storage, Volume volume,
-        Scope scope, Path tempDirectory, Path jenkinsHome, boolean overwrite) {
+    private FetchExtractChain(List<String> latestBackupFiles,
+        Map<String, Boolean> restoreFromBackupMap, Storage storage, Volume volume, Scope scope,
+        Path tempDirectory, Path jenkinsHome, boolean overwrite) {
       this.latestBackupFiles = latestBackupFiles;
       this.restoreFromBackupMap = restoreFromBackupMap;
       this.storage = storage;
