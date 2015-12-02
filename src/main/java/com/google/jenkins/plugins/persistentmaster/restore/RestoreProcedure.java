@@ -138,7 +138,7 @@ public class RestoreProcedure {
     VersionComparator comparator =  VersionComparator.get();
     int compare = comparator.compare(fileSystemVersion, storageVersion);
     //considered an upgrade only if file system version exists and is greater than storage version
-    boolean isUpgrade = compare == 1;
+    boolean isUpgrade = compare > 0;
     for (String filename : storage.listMetadataForExistingFiles()) {
         restoreFromBackupMap.put(filename, !isUpgrade);
     }
