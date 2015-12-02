@@ -100,11 +100,11 @@ public class VersionComparator implements Comparator<String> {
     }
     // At least one version string has terminated.
     if (firstIter.hasNext()) {
-      // Second string has more sub-version information.
+      // First string has more sub-version information.
       return 1;
     }
     if (secondIter.hasNext()) {
-      // First string has more sub-version information.
+      // Second string has more sub-version information.
       return -1;
     }
     // Both version strings are identical.
