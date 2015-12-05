@@ -10,6 +10,13 @@
           <f:submit value="Force full backup" />
         </f:block>
       </f:form>
+      
+      <h3>Files in Conflict</h3>
+      <j:forEach var="string" items="${it.conflictedFiles}">
+        <pre>${string}</pre>
+      </j:forEach>
+      
+    
     </l:main-panel>
   </l:layout>
 </j:jelly>

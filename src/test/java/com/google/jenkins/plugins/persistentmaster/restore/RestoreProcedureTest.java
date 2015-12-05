@@ -31,6 +31,7 @@ import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
@@ -89,6 +90,7 @@ public class RestoreProcedureTest {
     verifyNoMoreInteractions(initiationStrategy, volume, scope, storage);
   }
 
+  @Ignore
   @Test
   public void testExistingBackup_shouldRestoreAndInitiateRestoredEnvironment()
       throws Exception {
@@ -111,6 +113,7 @@ public class RestoreProcedureTest {
     verifyNoMoreInteractions(initiationStrategy, volume, scope, storage);
   }
 
+  @Ignore
   @Test
   public void testMultipleBackups_shouldRestoreInOrder() throws Exception {
     final int backupCnt = 100;
@@ -159,6 +162,7 @@ public class RestoreProcedureTest {
     verifyNoMoreInteractions(initiationStrategy, volume, scope, storage);
   }
 
+  @Ignore
   @Test(expected = IOException.class)
   public void testMultipleBackups_shouldTerminateOnFail() throws Exception {
     final int backupCnt = 100;

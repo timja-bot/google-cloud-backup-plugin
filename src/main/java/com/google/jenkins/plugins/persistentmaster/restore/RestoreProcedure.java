@@ -15,6 +15,7 @@
  */
 package com.google.jenkins.plugins.persistentmaster.restore;
 
+import com.google.jenkins.plugins.persistentmaster.FileTreeVisitor;
 import com.google.jenkins.plugins.persistentmaster.VersionComparator;
 import com.google.jenkins.plugins.persistentmaster.VersionUtility;
 import com.google.jenkins.plugins.persistentmaster.initiation.InitiationStrategy;
@@ -23,8 +24,12 @@ import com.google.jenkins.plugins.persistentmaster.storage.Storage;
 import com.google.jenkins.plugins.persistentmaster.volume.Volume;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -56,6 +61,7 @@ public class RestoreProcedure {
   private final Path jenkinsHome;
   private final Path scratchDir;
   private final boolean overwrite;
+
 
   public RestoreProcedure(
       Volume volume, Scope scope, Storage storage,
@@ -106,6 +112,37 @@ public class RestoreProcedure {
           ? Files.createTempDirectory(TMP_DIR_PREFIX)
           : Files.createTempDirectory(scratchDir, TMP_DIR_PREFIX);
       logger.fine("Using temp directory: " + tempDirectory);
+      
+      final Path backupStatePath =  scratchDir.resolve("backup-state");
+      if(Files.notExists(backupStatePath)){
+        Files.write(backupStatePath, restoreFromBackupMap.keySet(), StandardCharsets.UTF_8,
+            StandardOpenOption.CREATE_NEW);
+        FileTreeVisitor dir = new FileTreeVisitor(jenkinsHome);
+        Files.walkFileTree(jenkinsHome, EnumSet.of(FileVisitOption.FOLLOW_LINKS),Integer.MAX_VALUE,dir);
+        
+        Path startStatePath = scratchDir.resolve("start-state");
+        Files.write(startStatePath, dir.fileNames, StandardCharsets.UTF_8,
+            StandardOpenOption.CREATE_NEW);
+      }
+//      final Path backup =
+//          scratchDir == null
+//              ? Files.createTempDirectory("backup-state")
+//              : Files.createTempDirectory(scratchDir, "backup-state");
+//      Path jenkinsBackupState = backup.resolve("backup-state");
+//
+//
+//      Files.write(jenkinsBackupState, restoreFromBackupMap.keySet(), StandardCharsets.UTF_8,
+//          StandardOpenOption.CREATE_NEW);
+//      Path jenkinsStartState = backup.resolve("start-state");
+//      Path createDirectory = Files.createDirectory(jenkinsStartState);
+//      logger.info(createDirectory.toString());
+//      DirUtils dir = new DirUtils(jenkinsHome, jenkinsStartState);
+//      Files.walkFileTree(
+//          jenkinsHome, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, dir);
+//
+//      Path ss = backup.resolve("ss");
+//      Files.write(ss, dir.start, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
+
       try {
         parallelFetchAndExtract(latestBackupFiles, restoreFromBackupMap, tempDirectory);
       } finally {
@@ -139,6 +176,15 @@ public class RestoreProcedure {
     int compare = comparator.compare(fileSystemVersion, storageVersion);
     //considered an upgrade only if file system version exists and is greater than storage version
     boolean isUpgrade = compare > 0;
+    //Files.createDirectories(scratchDir);
+//    final Path dir = scratchDir == null
+//        ? Files.createTempDirectory("a")
+//        : Files.createTempDirectory(scratchDir, "a");
+   // Files.createTempDirectory(scratchDir,"backup-state");
+    //Path jenkinsBackupState = jenkinsHome.resolve("backup-tmp/backup-state");
+//    Files.write(jenkinsBackupState, storage.listMetadataForExistingFiles(), StandardCharsets.UTF_8,
+//        StandardOpenOption.CREATE_NEW);
+    
     for (String filename : storage.listMetadataForExistingFiles()) {
         restoreFromBackupMap.put(filename, !isUpgrade);
     }
