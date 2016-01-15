@@ -120,7 +120,8 @@ public final class Scopes {
     boolean isExistingFileMetadata = !existingFileMetadataMap.isEmpty();
     for (Volume.Entry entry : extractor) {
       if (isExistingFileMetadata && !existingFileMetadataMap.containsKey(entry.getName())) {
-        logger.fine("Match not found for: " + entry.getName());
+        logger.fine("File found in storage volume with no corresponding entry "
+            + "in list of existing files: " + entry.getName());
         continue;
       }
       Path path = targetDir.resolve(entry.getName());
@@ -133,7 +134,6 @@ public final class Scopes {
       if (shouldRestoreFromBackup != null && shouldRestoreFromBackup) {
         entry.extractTo(path);
       }
-
     }
   }
 }

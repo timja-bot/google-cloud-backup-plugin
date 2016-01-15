@@ -106,7 +106,7 @@ public class GcloudGcsStorage implements Storage {
       return null;
     }
     if (files.isEmpty()) {
-      logger.fine("Last-backup file is empty, no backups available.");
+      logger.info("Last-backup file is empty, no backups available.");
       return null;
     }
     return files;
@@ -147,7 +147,7 @@ public class GcloudGcsStorage implements Storage {
   }
 
 
-  
+
   private List<String> getObjectFromGCS(String name) throws IOException {
     List<String> content = null;
     List<String> files = new LinkedList<>();
@@ -162,7 +162,7 @@ public class GcloudGcsStorage implements Storage {
     }
     return files;
   }
-  
+
   @Override
   public void updateLastBackup(List<String> filenames) throws IOException {
     logger.fine("Updating last-backup file.");
@@ -174,7 +174,7 @@ public class GcloudGcsStorage implements Storage {
     logger.fine("Updating existing files meta data.");
     uploadObjectToGCSS(Lists.newArrayList(filenames), EXISTING_FILE_METADATA, EXISTING_FILES_COMMENT_LINE);
   }
-  
+
   @Override
   public void updateVersionInfo(String version) throws IOException {
     if(version == null){

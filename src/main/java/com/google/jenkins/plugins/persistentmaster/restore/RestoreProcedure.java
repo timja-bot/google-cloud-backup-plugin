@@ -82,15 +82,15 @@ public class RestoreProcedure {
     // Get versions from storage and version on the file system
      String storageVersion = storage.getVersionInfo();
      String fileSystemVersion = VersionUtility.getFileSystemVersion(jenkinsHome);
-     
+
     // If version on file system is the same or less than what is in the backup, then this is NOT an upgrade
     // and we should restore latest changes from backup. Otherwise honor the overwrite flag.
     Map<String, Boolean> restoreFromBackupMap =
         buildRestoreFromBackupMap(storageVersion, fileSystemVersion);
-    
+
     logger.fine("Number of files in the existing files metadata is: " + restoreFromBackupMap.size());
     List<String> latestBackupFiles = storage.findLatestBackup();
-    
+
     if (latestBackupFiles == null || latestBackupFiles.isEmpty()) {
       logger.warning("No backup files found, initializing new environment");
       initiationStrategy.initializeNewEnvironment(jenkinsHome);
@@ -128,7 +128,7 @@ public class RestoreProcedure {
   /**
    * @param storageVersion is the jenkins upgrade version in storage
    * @param fileSystemVersion is the jenkins upgrade version on the disk
-   * @return restoreFromBackupMap map that decides whether we should restore from backup    
+   * @return restoreFromBackupMap map that decides whether we should restore from backup
    * @throws IOException
    */
   private Map<String, Boolean> buildRestoreFromBackupMap(
@@ -140,7 +140,7 @@ public class RestoreProcedure {
     //considered an upgrade only if file system version exists and is greater than storage version
     boolean isUpgrade = compare > 0;
     for (String filename : storage.listMetadataForExistingFiles()) {
-        restoreFromBackupMap.put(filename, !isUpgrade);
+      restoreFromBackupMap.put(filename, !isUpgrade);
     }
     return restoreFromBackupMap;
   }
@@ -148,8 +148,6 @@ public class RestoreProcedure {
 
   private void parallelFetchAndExtract(List<String> latestBackupFiles, Map<String, Boolean> restoreFromBackupMap,
       Path tempDirectory) throws IOException {
-   
-   
     // A ForkJoinPool should usually be shared, rather than creating a new one
     // every time. However, since the RestoreProcedure is only ever invoked
     // once per VM, creating a shared pool is really not necessary.

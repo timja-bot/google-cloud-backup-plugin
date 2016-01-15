@@ -49,7 +49,7 @@ public class BackupProcedure {
       Logger.getLogger(BackupProcedure.class.getName());
 
   private static final String TMP_DIR_PREFIX
-      = "persistent-master-backup-plugin";
+      = "google-cloud-backup-plugin";
 
   private final Volume volume;
   private final Scope scope;
@@ -117,24 +117,26 @@ public class BackupProcedure {
         fileCount = creator.getFileCount();
       } // auto-close creator
 
-      logger.info("Updating all existing files : Size " + existingFileNames.size());
-      storage.updateExistingFilesMetaData(existingFileNames);
-      
-      String version = VersionUtility.getFileSystemVersion(jenkinsHome);
-      storage.updateVersionInfo(version);
-      
       if (fileCount > 0) {
         logger.fine("Storing backup volume");
         storage.storeFile(volumePath, backupVolumeName);
 
         logger.fine("Updating last backup reference");
         storage.updateLastBackup(Arrays.asList(backupVolumeName));
-        
-        logger.fine("Apply backup history policy");
+
+        logger.fine("Applying backup history policy");
         backupHistory.processHistoricBackups(storage, backupVolumeName);
       } else {
         logger.fine("Volume is empty, will skip storing backup");
       }
+
+      // This must happen after processHistoricBackups, which can delete files.
+      logger.fine("Updating list of existing files : Size " + existingFileNames.size());
+      storage.updateExistingFilesMetaData(existingFileNames);
+
+      String version = VersionUtility.getFileSystemVersion(jenkinsHome);
+      logger.fine("Updating version : " + version);
+      storage.updateVersionInfo(version);
     } finally {
       // cleanup after ourselves
       try {

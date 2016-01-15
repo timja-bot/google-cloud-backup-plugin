@@ -84,7 +84,7 @@ public class LocalFileStorage implements Storage {
 
   @Override
   public List<String> listMetadataForExistingFiles() throws IOException {
-    List<String> fileMetadata = listDataFromStorage(LAST_BACKUP_FILE);
+    List<String> fileMetadata = listDataFromStorage(EXISTING_FILE_METADATA);
     return (fileMetadata == null) ? new LinkedList<String>():fileMetadata;
   }
 
@@ -92,12 +92,12 @@ public class LocalFileStorage implements Storage {
   public List<String> findLatestBackup() throws IOException {
     return listDataFromStorage(LAST_BACKUP_FILE);
   }
-  
+
   @Override
   public String getVersionInfo() {
     return VersionUtility.getFileSystemVersion(storageDir);
   }
-  
+
   private List<String> listDataFromStorage(String name) throws IOException {
     Path path = storageDir.resolve(name);
     if (Files.exists(path)) {
@@ -112,25 +112,25 @@ public class LocalFileStorage implements Storage {
       }
       return filenames;
     }
-    return null; 
+    return null;
   }
 
   @Override
   public void updateLastBackup(List<String> filenames) throws IOException {
     updateObject(filenames, LAST_BACKUP_FILE, COMMENT_LINE);
   }
-  
+
   @Override
   public void updateExistingFilesMetaData(Set<String> filenames) throws IOException {
     updateObject(Lists.newArrayList(filenames), EXISTING_FILE_METADATA , EXISTING_FILES_COMMENT_LINE);
-    
+
   }
-  
+
   @Override
   public void updateVersionInfo(String version) throws IOException {
     VersionUtility.updateFileSystemVersion(storageDir, version);
   }
-  
+
   public void updateObject(List<String> filenames, String name, String comment) throws IOException {
     Path path = storageDir.resolve(name);
     Deque<String> content = new LinkedList<>(filenames);
@@ -140,7 +140,6 @@ public class LocalFileStorage implements Storage {
         StandardOpenOption.CREATE, StandardOpenOption.WRITE,
         StandardOpenOption.TRUNCATE_EXISTING);
   }
-
 
   @Override
   public boolean equals(Object o) {
@@ -172,9 +171,4 @@ public class LocalFileStorage implements Storage {
         "storageDir=" + storageDir +
         '}';
   }
-
- 
-
- 
-
 }
