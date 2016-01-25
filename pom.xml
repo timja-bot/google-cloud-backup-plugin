@@ -9,7 +9,7 @@
 
   <artifactId>google-cloud-backup</artifactId>
   <packaging>hpi</packaging>
-  <version>0.6-SNAPSHOT</version>
+  <version>0.7-SNAPSHOT</version>
 
   <name>Google Cloud Backup Plugin</name>
   <licenses>
