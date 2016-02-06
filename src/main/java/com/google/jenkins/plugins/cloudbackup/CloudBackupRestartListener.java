@@ -23,7 +23,7 @@ import hudson.model.RestartListener;
 import jenkins.model.Jenkins;
 
 /**
- * Invokes a final backup when
+ * Invokes a final backup when Jenkins has initiated a restart.
  */
 @Extension
 public class CloudBackupRestartListener extends RestartListener {
