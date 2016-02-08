@@ -51,7 +51,7 @@ public class GcloudGcsStorage implements Storage {
   private static final String EXISTING_FILES_COMMENT_LINE =
       COMMENT_PREFIX + " This file contains the existing files meta data.";
   private static final String GSUTIL_CMD = "gsutil";
-  private static final String TMP_DIR_PREFIX = "cloud-backup-backup-plugin";
+  private static final String TMP_DIR_PREFIX = "cloud-backup-plugin";
 
 
   private final String gsUrlPrefix;

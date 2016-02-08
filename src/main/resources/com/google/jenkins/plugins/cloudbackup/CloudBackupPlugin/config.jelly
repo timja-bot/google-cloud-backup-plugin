@@ -2,23 +2,23 @@
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="Cloud Backup Plugin">
     <f:entry title="${%Enable backup}"
-             help="/plugin/google-cloud-backup-backup-plugin/help-enableBackup.html">
+             help="/plugin/google-cloud-backup-plugin/help-enableBackup.html">
       <f:checkbox name="enableBackup" field="enableBackup" checked="${it.enableBackup}"/>
     </f:entry>
     <f:entry title="${%Enable auto-restore}"
-             help="/plugin/google-cloud-backup-backup-plugin/help-enableAutoRestore.html">
+             help="/plugin/google-cloud-backup-plugin/help-enableAutoRestore.html">
       <f:checkbox name="enableAutoRestore" field="enableAutoRestore" checked="${it.enableAutoRestore}"/>
     </f:entry>
     <f:entry title="${%Overwrite local data on restore}"
-             help="/plugin/google-cloud-backup-backup-plugin/help-restoreOverwritesData.html">
+             help="/plugin/google-cloud-backup-plugin/help-restoreOverwritesData.html">
       <f:checkbox name="restoreOverwritesData" field="restoreOverwritesData" checked="${it.restoreOverwritesData}" />
     </f:entry>
     <f:entry title="${%Full backup interval in hours}"
-             help="/plugin/google-cloud-backup-backup-plugin/help-fullBackupIntervalHours.html">
+             help="/plugin/google-cloud-backup-plugin/help-fullBackupIntervalHours.html">
       <f:number name="fullBackupIntervalHours" field="fullBackupIntervalHours" value="${it.fullBackupIntervalHours}"/>
     </f:entry>
     <f:entry title="${%Incremental backup interval in minutes}"
-             help="/plugin/google-cloud-backup-backup-plugin/help-incrementalBackupIntervalMinutes.html">
+             help="/plugin/google-cloud-backup-plugin/help-incrementalBackupIntervalMinutes.html">
       <f:number name="incrementalBackupIntervalMinutes" field="incrementalBackupIntervalMinutes" value="${it.incrementalBackupIntervalMinutes}"/>
     </f:entry>
     <j:set var="globalConfig" value="${instance}"/>
@@ -30,7 +30,7 @@
       <f:hetero-list name="backupScopeList"
        descriptors="${it.allScopes}" hasHeader="true" items="${it.backupScopes}"
         addCaption="${%Add backup scope}"
-        help="/plugin/google-cloud-backup-backup-plugin/help-backupScopeList" />
+        help="/plugin/google-cloud-backup-plugin/help-backupScopeList" />
     </f:entry>
     <j:set var="instance" value="${globalConfig}"/>
   </f:section>
