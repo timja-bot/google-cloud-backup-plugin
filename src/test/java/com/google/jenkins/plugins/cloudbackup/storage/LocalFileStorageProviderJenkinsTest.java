@@ -23,9 +23,9 @@ import org.junit.Test;
 
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
 import com.google.jenkins.plugins.cloudbackup.CloudBackupPlugin;
 import hudson.DescriptorExtensionList;
 
@@ -63,7 +63,7 @@ public class LocalFileStorageProviderJenkinsTest {
     HtmlOption option = TestUtils.findOptionWithText(
         form, LocalFileStorageProvider.DISPLAY_NAME);
     option.setSelected(true);
-    form.getInputByName("_.directory").setValueAttribute(PATH);
+    form.getInputByName("_.directory").setValue(PATH);
     jenkins.submit(form);
 
     LocalFileStorageProvider provider =

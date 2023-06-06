@@ -21,9 +21,9 @@ import org.junit.Test;
 
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
 import com.google.jenkins.plugins.cloudbackup.CloudBackupPlugin;
 import hudson.DescriptorExtensionList;
 
@@ -60,7 +60,7 @@ public class GcloudGcsStorageProviderJenkinsTest {
     HtmlOption option = TestUtils.findOptionWithText(
         form, GcloudGcsStorageProvider.DISPLAY_NAME);
     option.setSelected(true);
-    form.getInputByName("_.bucket").setValueAttribute(BUCKET);
+    form.getInputByName("_.bucket").setValue(BUCKET);
     jenkins.submit(form);
 
     GcloudGcsStorageProvider provider =

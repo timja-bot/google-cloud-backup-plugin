@@ -26,9 +26,9 @@ import org.junit.Test;
 
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.gargoylesoftware.htmlunit.WebAssert;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.WebAssert;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import com.google.jenkins.plugins.cloudbackup.storage.LocalFileStorageProvider;
 
 /**
@@ -54,9 +54,9 @@ public class CloudBackupPluginJenkinsTest {
     HtmlPage configPage = jenkins.createWebClient().goTo("configure");
     HtmlForm form = configPage.getFormByName("config");
     form.getInputByName("enableBackup").setChecked(true);
-    form.getInputByName("fullBackupIntervalHours").setValueAttribute("50");
+    form.getInputByName("fullBackupIntervalHours").setValue("50");
     form.getInputByName("incrementalBackupIntervalMinutes")
-        .setValueAttribute("55");
+        .setValue("55");
     jenkins.submit(form);
 
     CloudBackupPlugin plugin = CloudBackupPlugin.getInstance();
@@ -89,7 +89,7 @@ public class CloudBackupPluginJenkinsTest {
     // Simulate save from user which changes the storage location.
     HtmlPage configPage = jenkins.createWebClient().goTo("configure");
     HtmlForm form = configPage.getFormByName("config");
-    form.getInputByName("_.directory").setValueAttribute("/some/location");
+    form.getInputByName("_.directory").setValue("/some/location");
     jenkins.submit(form);
 
     LocalFileStorageProvider provider =

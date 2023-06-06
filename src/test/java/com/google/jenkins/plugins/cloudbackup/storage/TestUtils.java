@@ -17,9 +17,9 @@ package com.google.jenkins.plugins.cloudbackup.storage;
 
 import javax.annotation.Nullable;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlSelect;
 
 /**
  * Utility methods for tests.
